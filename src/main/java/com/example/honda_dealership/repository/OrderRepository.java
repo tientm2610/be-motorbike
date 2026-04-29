@@ -25,4 +25,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderCode(String orderCode);
 
     List<Order> findByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+    Page<Order> findByUser_FullNameContainingIgnoreCase(String fullName, Pageable pageable);
+
+    Page<Order> findByUser_EmailContainingIgnoreCase(String email, Pageable pageable);
+
+    Page<Order> findByStatusAndUser_FullNameContainingIgnoreCase(OrderStatus status, String fullName, Pageable pageable);
 }
