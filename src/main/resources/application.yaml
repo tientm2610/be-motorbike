@@ -8,10 +8,19 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
   security:
     user:
       name: user
       password: password
+
+logging:
+  level:
+    root: INFO
+    com.example.honda_dealership: DEBUG
+    org.springframework.web: DEBUG
 
 server:
   port: 8080
@@ -20,5 +29,5 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationMustBeVeryLongAndSecure123456}
+    secret: ${JWT_SECRET:c22b54d9690db53324f3d424d21c9c9c3148010e8cfed2563ce631d14e0675e2}
     expiration: 86400000

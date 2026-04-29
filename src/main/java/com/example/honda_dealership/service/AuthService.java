@@ -44,8 +44,7 @@ public class AuthService {
                 .build();
 
         user = userRepository.save(user);
-
-        String token = jwtService.generateToken(new CustomUserDetails(user));
+        userRepository.flush();
 
         return AuthResponse.builder()
                 .id(user.getId())
@@ -54,7 +53,6 @@ public class AuthService {
                 .phone(user.getPhone())
                 .role(user.getRole())
                 .status(user.getStatus())
-                .token(token)
                 .createdAt(user.getCreatedAt())
                 .build();
     }
