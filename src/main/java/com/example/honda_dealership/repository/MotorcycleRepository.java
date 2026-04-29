@@ -23,7 +23,7 @@ public interface MotorcycleRepository extends JpaRepository<Motorcycle, Long>, J
 
     List<Motorcycle> findByNameContainingIgnoreCase(String keyword);
 
-    List<Motorcycle> findByPriceBetween(BigDecimal min, BigDecimal max);
+    List<Motorcycle> findByBasePriceBetween(BigDecimal min, BigDecimal max);
 
     boolean existsByCode(String code);
 

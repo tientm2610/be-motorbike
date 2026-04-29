@@ -1,0 +1,281 @@
+{
+  "info": {
+    "name": "Motorbike E-commerce API",
+    "description": "API for Motorbike E-commerce Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/register",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Test User\",\n  \"phone\": \"0912345678\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/auth/me",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ]
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Products (Public)",
+      "item": [
+        {
+          "name": "Get All Motorcycles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/motorcycles",
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "20"},
+                {"key": "sort", "value": "createdAt,desc"}
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Motorcycle by ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/motorcycles/1"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Motorcycle by Slug",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/motorcycles/slug/sh125i"
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Motorcycles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/motorcycles",
+              "query": [
+                {"key": "brandId", "value": "1"},
+                {"key": "minPrice", "value": "30000000"},
+                {"key": "maxPrice", "value": "100000000"},
+                {"key": "status", "value": "AVAILABLE"}
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Motorcycles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/motorcycles",
+              "query": [
+                {"key": "keyword", "value": "SH"}
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Brands",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/brands"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/categories"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin Products",
+      "item": [
+        {
+          "name": "Create Motorcycle (Admin)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/motorcycles",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SH125i\",\n  \"code\": \"SH125\",\n  \"slug\": \"sh125i\",\n  \"price\": 45000000,\n  \"description\": \"Honda SH125i\",\n  \"brandId\": 1,\n  \"categoryId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Motorcycle (Admin)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/admin/motorcycles/1",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"SH125i Updated\",\n  \"code\": \"SH125\",\n  \"slug\": \"sh125i\",\n  \"price\": 48000000,\n  \"description\": \"Updated description\",\n  \"brandId\": 1,\n  \"categoryId\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Motorcycle (Admin)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/motorcycles/1",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "Create Brand (Admin)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/brands",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Honda\",\n  \"logoUrl\": \"https://example.com/honda.png\",\n  \"description\": \"Honda Motorcycles\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/categories",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Tay côn\",\n  \"slug\": \"tay-con\",\n  \"description\": \"Xe tay côn\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Variant (Admin)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/admin/variants",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"motorcycleId\": 1,\n  \"colorName\": \"Đen\",\n  \"colorCode\": \"#000000\",\n  \"stockQuantity\": 10\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Variant (Admin)",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/admin/variants/1?stockQuantity=5&status=AVAILABLE",
+              "query": [
+                {"key": "stockQuantity", "value": "5"},
+                {"key": "status", "value": "AVAILABLE"}
+              ]
+            },
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ]
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Variant (Admin)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/admin/variants/1",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{token}}"}
+            ]
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
