@@ -1,6 +1,7 @@
 package com.example.honda_dealership.controller;
 
 import com.example.honda_dealership.dto.request.*;
+import com.example.honda_dealership.dto.response.ApiResponse;
 import com.example.honda_dealership.dto.response.BrandResponse;
 import com.example.honda_dealership.dto.response.CategoryResponse;
 import com.example.honda_dealership.dto.response.MotorcycleResponse;
@@ -23,55 +24,55 @@ public class AdminProductController {
     private final AdminProductService adminProductService;
 
     @PostMapping("/motorcycles")
-    public ResponseEntity<MotorcycleResponse> createMotorcycle(@Valid @RequestBody CreateMotorcycleRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(adminProductService.createMotorcycle(request));
+    public ResponseEntity<ApiResponse<MotorcycleResponse>> createMotorcycle(@Valid @RequestBody CreateMotorcycleRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(adminProductService.createMotorcycle(request)));
     }
 
     @PutMapping("/motorcycles/{id}")
-    public ResponseEntity<MotorcycleResponse> updateMotorcycle(
+    public ResponseEntity<ApiResponse<MotorcycleResponse>> updateMotorcycle(
             @PathVariable Long id,
             @Valid @RequestBody UpdateMotorcycleRequest request
     ) {
-        return ResponseEntity.ok(adminProductService.updateMotorcycle(id, request));
+        return ResponseEntity.ok(ApiResponse.success(adminProductService.updateMotorcycle(id, request)));
     }
 
     @DeleteMapping("/motorcycles/{id}")
-    public ResponseEntity<Void> deleteMotorcycle(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteMotorcycle(@PathVariable Long id) {
         adminProductService.deleteMotorcycle(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 
     @PostMapping("/brands")
-    public ResponseEntity<BrandResponse> createBrand(@Valid @RequestBody CreateBrandRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+    public ResponseEntity<ApiResponse<BrandResponse>> createBrand(@Valid @RequestBody CreateBrandRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
                 adminProductService.createBrand(request.getName(), request.getLogoUrl(), request.getDescription())
-        );
+        ));
     }
 
     @PostMapping("/categories")
-    public ResponseEntity<CategoryResponse> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(
+    public ResponseEntity<ApiResponse<CategoryResponse>> createCategory(@Valid @RequestBody CreateCategoryRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(
                 adminProductService.createCategory(request.getName(), request.getSlug(), request.getDescription())
-        );
+        ));
     }
 
     @PostMapping("/variants")
-    public ResponseEntity<VariantResponse> createVariant(@Valid @RequestBody CreateVariantRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(adminProductService.createVariant(request));
+    public ResponseEntity<ApiResponse<VariantResponse>> createVariant(@Valid @RequestBody CreateVariantRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(adminProductService.createVariant(request)));
     }
 
     @PutMapping("/variants/{id}")
-    public ResponseEntity<VariantResponse> updateVariant(
+    public ResponseEntity<ApiResponse<VariantResponse>> updateVariant(
             @PathVariable Long id,
             @RequestParam(required = false) Integer stockQuantity,
             @RequestParam(required = false) VariantStatus status
     ) {
-        return ResponseEntity.ok(adminProductService.updateVariant(id, stockQuantity, status));
+        return ResponseEntity.ok(ApiResponse.success(adminProductService.updateVariant(id, stockQuantity, status)));
     }
 
     @DeleteMapping("/variants/{id}")
-    public ResponseEntity<Void> deleteVariant(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> deleteVariant(@PathVariable Long id) {
         adminProductService.deleteVariant(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(ApiResponse.success(null));
     }
 }
