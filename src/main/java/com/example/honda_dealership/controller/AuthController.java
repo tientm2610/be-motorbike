@@ -2,6 +2,7 @@ package com.example.honda_dealership.controller;
 
 import com.example.honda_dealership.dto.request.LoginRequest;
 import com.example.honda_dealership.dto.request.RegisterRequest;
+import com.example.honda_dealership.dto.response.ApiResponse;
 import com.example.honda_dealership.dto.response.AuthResponse;
 import com.example.honda_dealership.dto.response.UserProfileResponse;
 import com.example.honda_dealership.service.AuthService;
@@ -20,17 +21,17 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
+    public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(authService.register(request)));
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(authService.login(request)));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
-        return ResponseEntity.ok(authService.getProfile(authentication.getName()));
+    public ResponseEntity<ApiResponse<UserProfileResponse>> getProfile(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.success(authService.getProfile(authentication.getName())));
     }
 }
