@@ -13,6 +13,12 @@ This Postman collection contains all API endpoints for the Honda Dealership Moto
 }
 ```
 
+### Authentication (JWT)
+- **Access Token**: 15 minutes validity
+- **Refresh Token**: 7 days validity
+- Login returns both tokens: `accessToken` + `refreshToken`
+- Use `/auth/refresh` to get new tokens when access expires
+
 ### Roles
 - **ADMIN**: Full system access
 - **STAFF**: Order management
@@ -38,18 +44,16 @@ This Postman collection contains all API endpoints for the Honda Dealership Moto
 
 ### 3. Verify Configuration
 
-- `baseUrl` should be: `http://localhost:8080/honda`
+- `baseUrl` should be: `http://localhost:8080`
 - Make sure the Spring Boot app is running on port 8080
 
----
+### 4. Start Testing
 
-## Recommended Testing Order
+1. **Login as Admin** → Tokens auto-saved to `adminToken` + `adminRefreshToken`
+2. **Login as Staff** → Tokens auto-saved to `staffToken` + `staffRefreshToken`
+3. **Login as Customer** → Tokens auto-saved to `customerToken` + `customerRefreshToken`
 
-### Step 1: Login (Get Tokens)
-
-1. **Login - Admin** → Tokens auto-saved to `adminToken`
-2. **Login - Staff** → Tokens auto-saved to `staffToken`
-3. **Login - Customer** → Tokens auto-saved to `customerToken`
+> Tokens are automatically saved after successful login. Use the correct token for each role.
 
 ### Step 2: Test Public APIs
 
@@ -99,9 +103,21 @@ This Postman collection contains all API endpoints for the Honda Dealership Moto
 ### Auth (`/api/v1/auth`)
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
-| POST | /login | Login | Public |
+| POST | /login | Login (returns accessToken + refreshToken) | Public |
 | POST | /register | Register customer | Public |
+| POST | /refresh | Refresh token | Public |
+| POST | /logout | Logout (revoke refresh token) | Public |
+| POST | /logout-all | Logout all devices | Required |
 | GET | /me | Get current user | Required |
+
+### Token Refresh Flow
+```
+1. Login → Get accessToken + refreshToken
+2. Use accessToken for API calls (15 min valid)
+3. When 401 → Call /refresh with refreshToken
+4. Receive new accessToken + new refreshToken
+5. Old refreshToken is invalidated
+```
 
 ### Products (`/api/v1`)
 | Method | Endpoint | Description | Auth |
@@ -166,20 +182,24 @@ This Postman collection contains all API endpoints for the Honda Dealership Moto
 
 | Variable | Default Value | Description |
 |----------|---------------|-------------|
-| baseUrl | http://localhost:8080/honda | API base URL |
+| baseUrl | http://localhost:8080 | API base URL |
 | adminEmail | admin@honda.com | Admin login |
 | adminPassword | Admin@123 | Admin password |
 | staffEmail | staff@honda.com | Staff login |
 | staffPassword | Staff@123 | Staff password |
 | customerEmail | customer@test.com | Customer login |
 | customerPassword | Customer@123 | Customer password |
-| adminToken | (auto) | JWT token for admin |
-| staffToken | (auto) | JWT token for staff |
-| customerToken | (auto) | JWT token for customer |
-| productId | (auto) | Product ID from creation |
-| variantId | (auto) | Variant ID from creation |
-| orderId | (auto) | Order ID from checkout |
-| cartItemId | (auto) | Cart item ID from add |
+| adminToken | (auto) | Access token for admin |
+| adminRefreshToken | (auto) | Refresh token for admin |
+| staffToken | (auto) | Access token for staff |
+| staffRefreshToken | (auto) | Refresh token for staff |
+| customerToken | (auto) | Access token for customer |
+| customerRefreshToken | (auto) | Refresh token for customer |
+| userId | (auto) | User ID after login |
+| motorcycleId | 1 | Motorcycle ID for testing |
+| variantId | 1 | Variant ID for testing |
+| orderId | 1 | Order ID for testing |
+| cartItemId | 1 | Cart item ID for testing |
 
 ---
 

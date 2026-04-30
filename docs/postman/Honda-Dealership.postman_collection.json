@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Honda Dealership API",
-    "description": "Motorbike E-commerce Platform Backend APIs\n\nStandard Response Format:\n```json\n{\n  \"code\": 1000,\n  \"message\": \"Success\",\n  \"result\": {}\n}\n```",
+    "description": "Motorbike E-commerce Platform Backend APIs\n\nAuthentication:\n- Login: Returns accessToken + refreshToken\n- Access Token: 15 minutes\n- Refresh Token: 7 days\n\nStandard Response Format:\n```json\n{\n  \"code\": 1000,\n  \"message\": \"Success\",\n  \"result\": {}\n}\n```",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -39,58 +39,6 @@
       "key": "customerPassword",
       "value": "Customer@123",
       "type": "string"
-    },
-    {
-      "key": "adminToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "staffToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "customerToken",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "productId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "variantId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "orderId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "cartItemId",
-      "value": "",
-      "type": "string"
-    }
-  ],
-  "event": [
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "exec": [
-          "var jsonData = pm.response.json();",
-          "if (jsonData.result && jsonData.result.token) {",
-          "    pm.environment.set('adminToken', jsonData.result.token);",
-          "}",
-          "if (jsonData.result && jsonData.result.id) {",
-          "    pm.environment.set('productId', jsonData.result.id);",
-          "}"
-        ]
-      }
     }
   ],
   "item": [
@@ -101,33 +49,29 @@
           "name": "Login - Admin",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
-            },
+            "url": "{{baseUrl}}/api/v1/auth/login",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"{{adminEmail}}\",\n    \"password\": \"{{adminPassword}}\"\n}"
+              "raw": "{\"email\": \"{{adminEmail}}\", \"password\": \"{{adminPassword}}\"}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
+                "type": "javascript",
                 "exec": [
                   "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.token) {",
-                  "        pm.environment.set('adminToken', jsonData.result.token);",
-                  "    }",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.result && jsonData.result.accessToken) {",
+                  "    pm.environment.set('adminToken', jsonData.result.accessToken);",
+                  "    pm.environment.set('adminRefreshToken', jsonData.result.refreshToken);",
+                  "    pm.environment.set('userId', jsonData.result.id);",
+                  "  }",
                   "}"
                 ]
               }
@@ -138,33 +82,29 @@
           "name": "Login - Staff",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
-            },
+            "url": "{{baseUrl}}/api/v1/auth/login",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"{{staffEmail}}\",\n    \"password\": \"{{staffPassword}}\"\n}"
+              "raw": "{\"email\": \"{{staffEmail}}\", \"password\": \"{{staffPassword}}\"}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
+                "type": "javascript",
                 "exec": [
                   "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.token) {",
-                  "        pm.environment.set('staffToken', jsonData.result.token);",
-                  "    }",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.result && jsonData.result.accessToken) {",
+                  "    pm.environment.set('staffToken', jsonData.result.accessToken);",
+                  "    pm.environment.set('staffRefreshToken', jsonData.result.refreshToken);",
+                  "    pm.environment.set('userId', jsonData.result.id);",
+                  "  }",
                   "}"
                 ]
               }
@@ -175,33 +115,29 @@
           "name": "Login - Customer",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "login"]
-            },
+            "url": "{{baseUrl}}/api/v1/auth/login",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"{{customerEmail}}\",\n    \"password\": \"{{customerPassword}}\"\n}"
+              "raw": "{\"email\": \"{{customerEmail}}\", \"password\": \"{{customerPassword}}\"}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
+                "type": "javascript",
                 "exec": [
                   "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.token) {",
-                  "        pm.environment.set('customerToken', jsonData.result.token);",
-                  "    }",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.result && jsonData.result.accessToken) {",
+                  "    pm.environment.set('customerToken', jsonData.result.accessToken);",
+                  "    pm.environment.set('customerRefreshToken', jsonData.result.refreshToken);",
+                  "    pm.environment.set('userId', jsonData.result.id);",
+                  "  }",
                   "}"
                 ]
               }
@@ -209,23 +145,64 @@
           ]
         },
         {
-          "name": "Register - Customer",
+          "name": "Register Customer",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/register",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "register"]
-            },
+            "url": "{{baseUrl}}/api/v1/auth/register",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
+              { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"newcustomer@test.com\",\n    \"password\": \"Test@123\",\n    \"fullName\": \"New Customer\",\n    \"phone\": \"0912345678\"\n}"
+              "raw": "{\"email\": \"newcustomer@test.com\", \"password\": \"Test@123\", \"fullName\": \"New Customer\", \"phone\": \"0912345678\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/refresh",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{customerRefreshToken}}\"}",
+              "options": { "raw": { "language": "json" } }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.result && jsonData.result.accessToken) {",
+                  "    pm.environment.set('customerToken', jsonData.result.accessToken);",
+                  "    pm.environment.set('customerRefreshToken', jsonData.result.refreshToken);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/logout",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"refreshToken\": \"{{customerRefreshToken}}\"}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         },
@@ -233,20 +210,9 @@
           "name": "Get My Profile",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "auth", "me"]
-            },
+            "url": "{{baseUrl}}/api/v1/auth/me",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ]
           }
         }
@@ -259,82 +225,35 @@
           "name": "Get All Motorcycles",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/motorcycles",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "motorcycles"],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "20"
-                }
-              ]
-            }
+            "url": "{{baseUrl}}/api/v1/motorcycles"
           }
         },
         {
           "name": "Get Motorcycle Detail",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/motorcycles/1",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "motorcycles", "1"]
-            }
+            "url": "{{baseUrl}}/api/v1/motorcycles/{{motorcycleId}}"
           }
         },
         {
-          "name": "Get Motorcycles by Slug",
+          "name": "Get Motorcycle by Slug",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/motorcycles/slug/honda-vision-2026",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "motorcycles", "slug", "honda-vision-2026"]
-            }
+            "url": "{{baseUrl}}/api/v1/motorcycles/slug/honda-vision-2026"
           }
         },
         {
-          "name": "Search Motorcycles",
+          "name": "Get Brands",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/motorcycles?keyword=vison",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "motorcycles"],
-              "query": [
-                {
-                  "key": "keyword",
-                  "value": "vison"
-                }
-              ]
-            }
+            "url": "{{baseUrl}}/api/v1/brands"
           }
         },
         {
-          "name": "Get All Brands",
+          "name": "Get Categories",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/brands",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "brands"]
-            }
-          }
-        },
-        {
-          "name": "Get All Categories",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "categories"]
-            }
+            "url": "{{baseUrl}}/api/v1/categories"
           }
         }
       ]
@@ -346,37 +265,28 @@
           "name": "Create Motorcycle",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/motorcycles",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "motorcycles"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/motorcycles",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Honda Lead 2026\",\n    \"code\": \"HL-2026-NEW\",\n    \"slug\": \"honda-lead-2026\",\n    \"basePrice\": 45000000,\n    \"description\": \"Honda Lead 2026 - Premium scooter\",\n    \"brandId\": 1,\n    \"categoryIds\": [1],\n    \"status\": \"ACTIVE\"\n}"
+              "raw": "{\"name\": \"Honda Lead 2026\", \"slug\": \"honda-lead-2026\", \"description\": \"Premium scooter\", \"price\": 45000000, \"brandId\": 1, \"categoryIds\": [1]}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
+                "type": "javascript",
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('productId', jsonData.result.id);",
-                  "    }",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.result && jsonData.result.id) {",
+                  "    pm.environment.set('motorcycleId', jsonData.result.id);",
+                  "  }",
                   "}"
                 ]
               }
@@ -387,24 +297,15 @@
           "name": "Update Motorcycle",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/motorcycles/{{productId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "motorcycles", "{{productId}}"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/motorcycles/{{motorcycleId}}",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Honda Lead 2026 Updated\",\n    \"basePrice\": 48000000\n}"
+              "raw": "{\"name\": \"Honda Lead 2026 Updated\", \"price\": 48000000}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         },
@@ -412,16 +313,9 @@
           "name": "Delete Motorcycle",
           "request": {
             "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/motorcycles/{{productId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "motorcycles", "{{productId}}"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/motorcycles/{{motorcycleId}}",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ]
           }
         },
@@ -429,37 +323,28 @@
           "name": "Create Variant",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/variants",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "variants"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/variants",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"motorcycleId\": 1,\n    \"sku\": \"HV-2026-BLU\",\n    \"variantName\": \"Blue\",\n    \"colorName\": \"Blue\",\n    \"colorCode\": \"#0000FF\",\n    \"stockQuantity\": 5\n}"
+              "raw": "{\"motorcycleId\": {{motorcycleId}}, \"color\": \"Blue\", \"stockQuantity\": 5}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
+                "type": "javascript",
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('variantId', jsonData.result.id);",
-                  "    }",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.result && jsonData.result.id) {",
+                  "    pm.environment.set('variantId', jsonData.result.id);",
+                  "  }",
                   "}"
                 ]
               }
@@ -470,24 +355,15 @@
           "name": "Create Brand",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/brands",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "brands"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/brands",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Kawasaki\",\n    \"description\": \"Kawasaki motorcycles\"\n}"
+              "raw": "{\"name\": \"Kawasaki\", \"description\": \"Kawasaki motorcycles\"}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         },
@@ -495,24 +371,15 @@
           "name": "Create Category",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/categories",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "categories"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/categories",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Electric\",\n    \"slug\": \"electric\",\n    \"description\": \"Electric motorcycles\"\n}"
+              "raw": "{\"name\": \"Xe điện\", \"slug\": \"xe-dien\", \"description\": \"Xe máy điện\"}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         }
@@ -525,37 +392,28 @@
           "name": "Add To Cart",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/cart/items",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart", "items"]
-            },
+            "url": "{{baseUrl}}/api/v1/cart/items",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"variantId\": 1,\n    \"quantity\": 2\n}"
+              "raw": "{\"variantId\": {{variantId}}, \"quantity\": 2}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
+                "type": "javascript",
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('cartItemId', jsonData.result.id);",
-                  "    }",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.result && jsonData.result.id) {",
+                  "    pm.environment.set('cartItemId', jsonData.result.id);",
+                  "  }",
                   "}"
                 ]
               }
@@ -566,16 +424,9 @@
           "name": "Get My Cart",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/cart",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart"]
-            },
+            "url": "{{baseUrl}}/api/v1/cart",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ]
           }
         },
@@ -583,24 +434,15 @@
           "name": "Update Cart Item",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/cart/items/{{cartItemId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart", "items", "{{cartItemId}}"]
-            },
+            "url": "{{baseUrl}}/api/v1/cart/items/{{cartItemId}}",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"quantity\": 3\n}"
+              "raw": "{\"quantity\": 3}",
+              "options": { "raw": { "language": "json" } }
             }
           }
         },
@@ -608,16 +450,9 @@
           "name": "Remove Cart Item",
           "request": {
             "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/cart/items/{{cartItemId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart", "items", "{{cartItemId}}"]
-            },
+            "url": "{{baseUrl}}/api/v1/cart/items/{{cartItemId}}",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ]
           }
         },
@@ -625,16 +460,9 @@
           "name": "Clear Cart",
           "request": {
             "method": "DELETE",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/cart/clear",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "cart", "clear"]
-            },
+            "url": "{{baseUrl}}/api/v1/cart/clear",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ]
           }
         }
@@ -647,37 +475,28 @@
           "name": "Checkout",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/orders/checkout",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "orders", "checkout"]
-            },
+            "url": "{{baseUrl}}/api/v1/orders/checkout",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"shippingName\": \"Nguyen Van A\",\n    \"shippingPhone\": \"0912345678\",\n    \"shippingAddress\": \"123 ABC Street, District 1, Ho Chi Minh City\",\n    \"paymentMethod\": \"COD\",\n    \"note\": \"Please deliver in the morning\"\n}"
+              "raw": "{\"paymentMethod\": \"COD\"}",
+              "options": { "raw": { "language": "json" } }
             }
           },
           "event": [
             {
               "listen": "test",
               "script": {
-                "type": "text/javascript",
+                "type": "javascript",
                 "exec": [
                   "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('orderId', jsonData.result.id);",
-                  "    }",
+                  "  var jsonData = pm.response.json();",
+                  "  if (jsonData.result && jsonData.result.id) {",
+                  "    pm.environment.set('orderId', jsonData.result.id);",
+                  "  }",
                   "}"
                 ]
               }
@@ -688,16 +507,9 @@
           "name": "Get My Orders",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/orders/my-orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "orders", "my-orders"]
-            },
+            "url": "{{baseUrl}}/api/v1/orders/my-orders",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ]
           }
         },
@@ -705,16 +517,9 @@
           "name": "Get Order Detail",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "orders", "{{orderId}}"]
-            },
+            "url": "{{baseUrl}}/api/v1/orders/{{orderId}}",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ]
           }
         },
@@ -722,16 +527,9 @@
           "name": "Cancel Order",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "orders", "{{orderId}}", "cancel"]
-            },
+            "url": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{customerToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
             ]
           }
         }
@@ -744,16 +542,9 @@
           "name": "Get All Orders",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/staff/orders",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "staff", "orders"]
-            },
+            "url": "{{baseUrl}}/api/v1/staff/orders",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{staffToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{staffToken}}" }
             ]
           }
         },
@@ -761,16 +552,9 @@
           "name": "Get Order Detail",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "staff", "orders", "{{orderId}}"]
-            },
+            "url": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{staffToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{staffToken}}" }
             ]
           }
         },
@@ -778,16 +562,9 @@
           "name": "Confirm Order",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/confirm",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "staff", "orders", "{{orderId}}", "confirm"]
-            },
+            "url": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/confirm",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{staffToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{staffToken}}" }
             ]
           }
         },
@@ -795,16 +572,9 @@
           "name": "Preparing Order",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/preparing",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "staff", "orders", "{{orderId}}", "preparing"]
-            },
+            "url": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/preparing",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{staffToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{staffToken}}" }
             ]
           }
         },
@@ -812,16 +582,9 @@
           "name": "Shipping Order",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/shipping",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "staff", "orders", "{{orderId}}", "shipping"]
-            },
+            "url": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/shipping",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{staffToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{staffToken}}" }
             ]
           }
         },
@@ -829,16 +592,9 @@
           "name": "Delivered Order",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/delivered",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "staff", "orders", "{{orderId}}", "delivered"]
-            },
+            "url": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/delivered",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{staffToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{staffToken}}" }
             ]
           }
         },
@@ -846,16 +602,9 @@
           "name": "Cancel Order",
           "request": {
             "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/cancel",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "staff", "orders", "{{orderId}}", "cancel"]
-            },
+            "url": "{{baseUrl}}/api/v1/staff/orders/{{orderId}}/cancel",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{staffToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{staffToken}}" }
             ]
           }
         }
@@ -868,16 +617,9 @@
           "name": "Get Summary",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/dashboard/summary",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "dashboard", "summary"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/summary",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ]
           }
         },
@@ -885,22 +627,9 @@
           "name": "Get Revenue",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/dashboard/revenue?range=7days",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "dashboard", "revenue"],
-              "query": [
-                {
-                  "key": "range",
-                  "value": "7days"
-                }
-              ]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/revenue?range=7days",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ]
           }
         },
@@ -908,16 +637,9 @@
           "name": "Get Top Products",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/dashboard/top-products",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "dashboard", "top-products"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/top-products",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ]
           }
         },
@@ -925,16 +647,9 @@
           "name": "Get Order Status",
           "request": {
             "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/dashboard/order-status",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "admin", "dashboard", "order-status"]
-            },
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/order-status",
             "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{adminToken}}"
-              }
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" }
             ]
           }
         }
