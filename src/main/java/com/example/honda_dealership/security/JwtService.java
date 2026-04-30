@@ -12,17 +12,25 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
 
+    private static final String TOKEN_TYPE_ACCESS = "access";
+    private static final String TOKEN_TYPE_REFRESH = "refresh";
+    private static final String CLAIM_TOKEN_TYPE = "type";
+    private static final String CLAIM_TOKEN_ID = "jti";
+
     private final String secretKey;
-    private final long jwtExpiration;
+    private final long accessTokenExpiration;
+    private final long refreshTokenExpiration;
 
     public JwtService() {
         this.secretKey = "c22b54d9690db53324f3d424d21c9c9c3148010e8cfed2563ce631d14e0675e2";
-        this.jwtExpiration = 86400000L;
+        this.accessTokenExpiration = 900000L;
+        this.refreshTokenExpiration = 604800000L;
     }
 
     public String extractUsername(String token) {
@@ -34,12 +42,26 @@ public class JwtService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateAccessToken(UserDetails userDetails) {
+        return generateAccessToken(new HashMap<>(), userDetails);
     }
 
-    public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return buildToken(extraClaims, userDetails, jwtExpiration);
+    public String generateAccessToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>(extraClaims);
+        claims.put(CLAIM_TOKEN_TYPE, TOKEN_TYPE_ACCESS);
+        claims.put(CLAIM_TOKEN_ID, UUID.randomUUID().toString());
+        return buildToken(claims, userDetails.getUsername(), accessTokenExpiration);
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        return generateRefreshToken(new HashMap<>(), userDetails);
+    }
+
+    public String generateRefreshToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        Map<String, Object> claims = new HashMap<>(extraClaims);
+        claims.put(CLAIM_TOKEN_TYPE, TOKEN_TYPE_REFRESH);
+        claims.put(CLAIM_TOKEN_ID, UUID.randomUUID().toString());
+        return buildToken(claims, userDetails.getUsername(), refreshTokenExpiration);
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
@@ -47,17 +69,41 @@ public class JwtService {
         return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
     }
 
-    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
+    public boolean isAccessToken(String token) {
+        return extractTokenType(token).equals(TOKEN_TYPE_ACCESS);
+    }
+
+    public boolean isRefreshToken(String token) {
+        return extractTokenType(token).equals(TOKEN_TYPE_REFRESH);
+    }
+
+    public String extractTokenType(String token) {
+        return extractClaim(token, claims -> claims.get(CLAIM_TOKEN_TYPE, String.class));
+    }
+
+    public String extractTokenId(String token) {
+        return extractClaim(token, claims -> claims.get(CLAIM_TOKEN_ID, String.class));
+    }
+
+    public long getAccessTokenExpiration() {
+        return accessTokenExpiration;
+    }
+
+    public long getRefreshTokenExpiration() {
+        return refreshTokenExpiration;
+    }
+
+    private String buildToken(Map<String, Object> extraClaims, String subject, long expiration) {
         return Jwts.builder()
                 .claims(extraClaims)
-                .subject(userDetails.getUsername())
+                .subject(subject)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSignInKey())
                 .compact();
     }
 
-    private boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
 

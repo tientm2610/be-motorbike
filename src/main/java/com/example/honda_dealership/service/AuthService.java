@@ -3,6 +3,7 @@ package com.example.honda_dealership.service;
 import com.example.honda_dealership.dto.request.LoginRequest;
 import com.example.honda_dealership.dto.request.RegisterRequest;
 import com.example.honda_dealership.dto.response.AuthResponse;
+import com.example.honda_dealership.dto.response.LoginResponse;
 import com.example.honda_dealership.dto.response.UserProfileResponse;
 import com.example.honda_dealership.entity.User;
 import com.example.honda_dealership.entity.enums.UserRole;
@@ -28,6 +29,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -57,7 +59,7 @@ public class AuthService {
                 .build();
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public LoginResponse login(LoginRequest request, String deviceInfo, String ipAddress) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -71,19 +73,9 @@ public class AuthService {
             throw new UnauthorizedException("User account is not active");
         }
 
-        String token = jwtService.generateToken(userDetails);
         User user = userDetails.getUser();
 
-        return AuthResponse.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .fullName(user.getFullName())
-                .phone(user.getPhone())
-                .role(user.getRole())
-                .status(user.getStatus())
-                .token(token)
-                .createdAt(user.getCreatedAt())
-                .build();
+        return refreshTokenService.createTokenResponse(userDetails, user, deviceInfo, ipAddress);
     }
 
     public UserProfileResponse getProfile(String email) {

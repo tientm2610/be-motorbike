@@ -15,6 +15,10 @@ public enum ResponseCode {
     ACCESS_DENIED(1006, "Access denied"),
     RESOURCE_NOT_FOUND(1007, "Resource not found"),
     BAD_REQUEST(1008, "Bad request"),
+    TOKEN_EXPIRED(1009, "Token expired"),
+    INVALID_TOKEN(1010, "Invalid token"),
+    REFRESH_TOKEN_REVOKED(1011, "Refresh token has been revoked"),
+    LOGOUT_SUCCESS(1012, "Logout successful"),
     INTERNAL_SERVER_ERROR(9999, "Internal server error");
 
     private final int code;
