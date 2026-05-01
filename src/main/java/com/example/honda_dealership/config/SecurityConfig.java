@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -59,8 +60,32 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        // Auth endpoints - Public
                         .requestMatchers("/api/v1/auth/**").permitAll()
+
+                        // Public GET endpoints - No auth required
+                        .requestMatchers(HttpMethod.GET, "/api/v1/motorcycles/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/brands/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/variants/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+
+                        // Admin endpoints - ADMIN only
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+
+                        // Staff endpoints - ADMIN or STAFF
+                        .requestMatchers("/api/v1/staff/**").hasAnyRole("ADMIN", "STAFF")
+
+                        // Image upload endpoints - ADMIN or STAFF
+                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "STAFF")
+
+                        // Cart endpoints - Authenticated (CUSTOMER, ADMIN, STAFF)
+                        .requestMatchers("/api/v1/cart/**").authenticated()
+
+                        // Order endpoints - Authenticated
+                        .requestMatchers("/api/v1/orders/**").authenticated()
+
+                        // All other requests need authentication
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
