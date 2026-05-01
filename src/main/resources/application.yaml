@@ -31,6 +31,8 @@ app:
   jwt:
     secret: ${JWT_SECRET:c22b54d9690db53324f3d424d21c9c9c3148010e8cfed2563ce631d14e0675e2}
     expiration: 86400000
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173
   seed:
     admin:
       email: admin@honda.com
