@@ -15,4 +15,6 @@ public interface VariantImageRepository extends JpaRepository<VariantImage, Long
     List<VariantImage> findByVariantIdOrderBySortOrderAsc(Long variantId);
 
     Optional<VariantImage> findByVariantIdAndIsThumbnailTrue(Long variantId);
+
+    Optional<VariantImage> findFirstByVariantIdOrderBySortOrderDesc(Long variantId);
 }

@@ -3,15 +3,20 @@ package com.example.honda_dealership.service;
 import com.example.honda_dealership.dto.response.BrandResponse;
 import com.example.honda_dealership.dto.response.CategoryResponse;
 import com.example.honda_dealership.dto.response.MotorcycleResponse;
+import com.example.honda_dealership.dto.response.VariantImageResponse;
+import com.example.honda_dealership.dto.response.VariantResponse;
 import com.example.honda_dealership.entity.Brand;
 import com.example.honda_dealership.entity.Category;
 import com.example.honda_dealership.entity.Motorcycle;
+import com.example.honda_dealership.entity.MotorcycleVariant;
 import com.example.honda_dealership.entity.enums.MotorcycleStatus;
 import com.example.honda_dealership.exception.ResourceNotFoundException;
 import com.example.honda_dealership.mapper.ProductMapper;
 import com.example.honda_dealership.repository.BrandRepository;
 import com.example.honda_dealership.repository.CategoryRepository;
 import com.example.honda_dealership.repository.MotorcycleRepository;
+import com.example.honda_dealership.repository.MotorcycleVariantRepository;
+import com.example.honda_dealership.repository.VariantImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,6 +31,8 @@ import java.util.List;
 public class ProductService {
 
     private final MotorcycleRepository motorcycleRepository;
+    private final MotorcycleVariantRepository variantRepository;
+    private final VariantImageRepository variantImageRepository;
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
@@ -98,6 +105,39 @@ public class ProductService {
         List<Motorcycle> motorcycles = motorcycleRepository.searchByKeyword(keyword, MotorcycleStatus.ACTIVE);
         return motorcycles.stream()
                 .map(productMapper::toMotorcycleSummaryResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<VariantResponse> getAllVariants(Pageable pageable) {
+        return variantRepository.findAll(pageable)
+                .map(productMapper::toVariantResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public VariantResponse getVariantById(Long id) {
+        MotorcycleVariant variant = variantRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Variant not found with id: " + id));
+        return productMapper.toVariantResponse(variant);
+    }
+
+    @Transactional(readOnly = true)
+    public List<VariantResponse> getVariantsByMotorcycleId(Long motorcycleId) {
+        if (!motorcycleRepository.existsById(motorcycleId)) {
+            throw new ResourceNotFoundException("Motorcycle not found with id: " + motorcycleId);
+        }
+        return variantRepository.findByMotorcycleId(motorcycleId).stream()
+                .map(productMapper::toVariantResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<VariantImageResponse> getImagesByVariantId(Long variantId) {
+        if (!variantRepository.existsById(variantId)) {
+            throw new ResourceNotFoundException("Variant not found with id: " + variantId);
+        }
+        return variantImageRepository.findByVariantIdOrderBySortOrderAsc(variantId).stream()
+                .map(productMapper::toVariantImageResponse)
                 .toList();
     }
 }

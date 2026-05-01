@@ -4,6 +4,8 @@ import com.example.honda_dealership.dto.response.ApiResponse;
 import com.example.honda_dealership.dto.response.BrandResponse;
 import com.example.honda_dealership.dto.response.CategoryResponse;
 import com.example.honda_dealership.dto.response.MotorcycleResponse;
+import com.example.honda_dealership.dto.response.VariantImageResponse;
+import com.example.honda_dealership.dto.response.VariantResponse;
 import com.example.honda_dealership.entity.enums.MotorcycleStatus;
 import com.example.honda_dealership.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -58,5 +60,27 @@ public class ProductController {
     @GetMapping("/categories")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategories() {
         return ResponseEntity.ok(ApiResponse.success(productService.getAllCategories()));
+    }
+
+    @GetMapping("/variants")
+    public ResponseEntity<ApiResponse<Page<VariantResponse>>> getAllVariants(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(productService.getAllVariants(pageable)));
+    }
+
+    @GetMapping("/variants/{id}")
+    public ResponseEntity<ApiResponse<VariantResponse>> getVariantById(@PathVariable Long id) {
+        return ResponseEntity.ok(ApiResponse.success(productService.getVariantById(id)));
+    }
+
+    @GetMapping("/motorcycles/{motorcycleId}/variants")
+    public ResponseEntity<ApiResponse<List<VariantResponse>>> getVariantsByMotorcycleId(@PathVariable Long motorcycleId) {
+        return ResponseEntity.ok(ApiResponse.success(productService.getVariantsByMotorcycleId(motorcycleId)));
+    }
+
+    @GetMapping("/variants/{variantId}/images")
+    public ResponseEntity<ApiResponse<List<VariantImageResponse>>> getImagesByVariantId(@PathVariable Long variantId) {
+        return ResponseEntity.ok(ApiResponse.success(productService.getImagesByVariantId(variantId)));
     }
 }
