@@ -293,16 +293,23 @@ public class OrderService {
 
     private OrderDetailResponse mapToDetailResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getItems().stream()
-                .map(item -> OrderItemResponse.builder()
-                        .id(item.getId())
-                        .variantId(item.getVariant().getId())
-                        .productName(item.getProductNameSnapshot())
-                        .variantName(item.getVariantNameSnapshot())
-                        .imageUrl(item.getVariant().getImageUrl())
-                        .quantity(item.getQuantity())
-                        .unitPrice(item.getUnitPrice())
-                        .subtotal(item.getSubtotal())
-                        .build())
+                .map(item -> {
+                    String imageUrl = item.getVariant().getImages().stream()
+                            .filter(img -> Boolean.TRUE.equals(img.getIsThumbnail()))
+                            .findFirst()
+                            .map(img -> img.getImageUrl())
+                            .orElse(null);
+                    return OrderItemResponse.builder()
+                            .id(item.getId())
+                            .variantId(item.getVariant().getId())
+                            .productName(item.getProductNameSnapshot())
+                            .variantName(item.getVariantNameSnapshot())
+                            .imageUrl(imageUrl)
+                            .quantity(item.getQuantity())
+                            .unitPrice(item.getUnitPrice())
+                            .subtotal(item.getSubtotal())
+                            .build();
+                })
                 .collect(Collectors.toList());
 
         return OrderDetailResponse.builder()

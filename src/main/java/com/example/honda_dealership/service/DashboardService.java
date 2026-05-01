@@ -69,9 +69,8 @@ public class DashboardService {
                 .map(row -> TopProductResponse.builder()
                         .id((Long) row[0])
                         .name((String) row[1])
-                        .imageUrl((String) row[2])
-                        .totalSold((Long) row[3])
-                        .totalOrders((Long) row[4])
+                        .totalSold((Long) row[2])
+                        .totalOrders((Long) row[3])
                         .build())
                 .collect(Collectors.toList());
     }

@@ -14,7 +14,6 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -28,14 +27,12 @@ public class ProductController {
     public ResponseEntity<ApiResponse<Page<MotorcycleResponse>>> getAllMotorcycles(
             @RequestParam(required = false) Long brandId,
             @RequestParam(required = false) Long categoryId,
-            @RequestParam(required = false) BigDecimal minPrice,
-            @RequestParam(required = false) BigDecimal maxPrice,
             @RequestParam(required = false) MotorcycleStatus status,
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         return ResponseEntity.ok(ApiResponse.success(productService.getAllMotorcycles(
-                brandId, categoryId, minPrice, maxPrice, status, keyword, pageable)));
+                brandId, categoryId, status, keyword, pageable)));
     }
 
     @GetMapping("/motorcycles/{id}")
@@ -46,6 +43,11 @@ public class ProductController {
     @GetMapping("/motorcycles/slug/{slug}")
     public ResponseEntity<ApiResponse<MotorcycleResponse>> getMotorcycleBySlug(@PathVariable String slug) {
         return ResponseEntity.ok(ApiResponse.success(productService.getMotorcycleBySlug(slug)));
+    }
+
+    @GetMapping("/motorcycles/search")
+    public ResponseEntity<ApiResponse<List<MotorcycleResponse>>> searchMotorcycles(@RequestParam String keyword) {
+        return ResponseEntity.ok(ApiResponse.success(productService.searchMotorcycles(keyword)));
     }
 
     @GetMapping("/brands")

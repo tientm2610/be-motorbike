@@ -138,19 +138,23 @@ public class CartService {
     }
 
     private BigDecimal calculateEffectivePrice(MotorcycleVariant variant) {
-        BigDecimal basePrice = variant.getMotorcycle().getBasePrice();
-        BigDecimal extraPrice = variant.getExtraPrice() != null ? variant.getExtraPrice() : BigDecimal.ZERO;
-        return basePrice.add(extraPrice);
+        return variant.getPrice();
     }
 
     private CartItemResponse mapToResponse(CartItem cartItem) {
         MotorcycleVariant variant = cartItem.getVariant();
+        String imageUrl = variant.getImages().stream()
+                .filter(img -> Boolean.TRUE.equals(img.getIsThumbnail()))
+                .findFirst()
+                .map(img -> img.getImageUrl())
+                .orElse(null);
+
         return CartItemResponse.builder()
                 .id(cartItem.getId())
                 .variantId(variant.getId())
                 .variantName(variant.getVariantName())
                 .colorName(variant.getColorName())
-                .imageUrl(variant.getImageUrl())
+                .imageUrl(imageUrl)
                 .motorcycleName(variant.getMotorcycle().getName())
                 .motorcycleSlug(variant.getMotorcycle().getSlug())
                 .quantity(cartItem.getQuantity())

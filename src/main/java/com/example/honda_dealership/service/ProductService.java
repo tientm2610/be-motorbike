@@ -19,7 +19,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -35,8 +34,6 @@ public class ProductService {
     public Page<MotorcycleResponse> getAllMotorcycles(
             Long brandId,
             Long categoryId,
-            BigDecimal minPrice,
-            BigDecimal maxPrice,
             MotorcycleStatus status,
             String keyword,
             Pageable pageable
@@ -48,15 +45,7 @@ public class ProductService {
         }
 
         if (categoryId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("categories").get("id"), categoryId));
-        }
-
-        if (minPrice != null) {
-            spec = spec.and((root, query, cb) -> cb.greaterThanOrEqualTo(root.get("basePrice"), minPrice));
-        }
-
-        if (maxPrice != null) {
-            spec = spec.and((root, query, cb) -> cb.lessThanOrEqualTo(root.get("basePrice"), maxPrice));
+            spec = spec.and((root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId));
         }
 
         if (status != null) {
@@ -101,6 +90,14 @@ public class ProductService {
     public List<CategoryResponse> getAllCategories() {
         return categoryRepository.findAll().stream()
                 .map(productMapper::toCategoryResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MotorcycleResponse> searchMotorcycles(String keyword) {
+        List<Motorcycle> motorcycles = motorcycleRepository.searchByKeyword(keyword, MotorcycleStatus.ACTIVE);
+        return motorcycles.stream()
+                .map(productMapper::toMotorcycleSummaryResponse)
                 .toList();
     }
 }

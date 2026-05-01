@@ -1,16 +1,19 @@
 package com.example.honda_dealership.service;
 
 import com.example.honda_dealership.dto.request.CreateMotorcycleRequest;
+import com.example.honda_dealership.dto.request.CreateVariantImageRequest;
 import com.example.honda_dealership.dto.request.CreateVariantRequest;
 import com.example.honda_dealership.dto.request.UpdateMotorcycleRequest;
 import com.example.honda_dealership.dto.response.BrandResponse;
 import com.example.honda_dealership.dto.response.CategoryResponse;
 import com.example.honda_dealership.dto.response.MotorcycleResponse;
+import com.example.honda_dealership.dto.response.VariantImageResponse;
 import com.example.honda_dealership.dto.response.VariantResponse;
 import com.example.honda_dealership.entity.Brand;
 import com.example.honda_dealership.entity.Category;
 import com.example.honda_dealership.entity.Motorcycle;
 import com.example.honda_dealership.entity.MotorcycleVariant;
+import com.example.honda_dealership.entity.VariantImage;
 import com.example.honda_dealership.entity.enums.MotorcycleStatus;
 import com.example.honda_dealership.entity.enums.VariantStatus;
 import com.example.honda_dealership.exception.BadRequestException;
@@ -20,11 +23,12 @@ import com.example.honda_dealership.repository.BrandRepository;
 import com.example.honda_dealership.repository.CategoryRepository;
 import com.example.honda_dealership.repository.MotorcycleRepository;
 import com.example.honda_dealership.repository.MotorcycleVariantRepository;
+import com.example.honda_dealership.repository.VariantImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -33,6 +37,7 @@ public class AdminProductService {
 
     private final MotorcycleRepository motorcycleRepository;
     private final MotorcycleVariantRepository variantRepository;
+    private final VariantImageRepository variantImageRepository;
     private final BrandRepository brandRepository;
     private final CategoryRepository categoryRepository;
     private final ProductMapper productMapper;
@@ -43,6 +48,10 @@ public class AdminProductService {
             throw new BadRequestException("Motorcycle code already exists");
         }
 
+        if (motorcycleRepository.existsBySlug(request.getSlug())) {
+            throw new BadRequestException("Motorcycle slug already exists");
+        }
+
         Brand brand = brandRepository.findById(request.getBrandId())
                 .orElseThrow(() -> new ResourceNotFoundException("Brand not found"));
 
@@ -50,17 +59,16 @@ public class AdminProductService {
                 .name(request.getName())
                 .code(request.getCode())
                 .slug(request.getSlug())
-                .basePrice(request.getBasePrice())
                 .description(request.getDescription())
                 .specsJson(request.getSpecsJson())
-                .thumbnailUrl(request.getThumbnailUrl())
                 .brand(brand)
                 .status(request.getStatus() != null ? request.getStatus() : MotorcycleStatus.ACTIVE)
                 .build();
 
-        if (request.getCategoryIds() != null && !request.getCategoryIds().isEmpty()) {
-            List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
-            motorcycle.setCategories(new HashSet<>(categories));
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+            motorcycle.setCategory(category);
         }
 
         motorcycle = motorcycleRepository.save(motorcycle);
@@ -81,20 +89,17 @@ public class AdminProductService {
             }
             motorcycle.setCode(request.getCode());
         }
-        if (request.getSlug() != null) {
+        if (request.getSlug() != null && !request.getSlug().equals(motorcycle.getSlug())) {
+            if (motorcycleRepository.existsBySlug(request.getSlug())) {
+                throw new BadRequestException("Motorcycle slug already exists");
+            }
             motorcycle.setSlug(request.getSlug());
-        }
-        if (request.getBasePrice() != null) {
-            motorcycle.setBasePrice(request.getBasePrice());
         }
         if (request.getDescription() != null) {
             motorcycle.setDescription(request.getDescription());
         }
         if (request.getSpecsJson() != null) {
             motorcycle.setSpecsJson(request.getSpecsJson());
-        }
-        if (request.getThumbnailUrl() != null) {
-            motorcycle.setThumbnailUrl(request.getThumbnailUrl());
         }
         if (request.getStatus() != null) {
             motorcycle.setStatus(request.getStatus());
@@ -106,9 +111,10 @@ public class AdminProductService {
             motorcycle.setBrand(brand);
         }
 
-        if (request.getCategoryIds() != null) {
-            List<Category> categories = categoryRepository.findAllById(request.getCategoryIds());
-            motorcycle.setCategories(new HashSet<>(categories));
+        if (request.getCategoryId() != null) {
+            Category category = categoryRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+            motorcycle.setCategory(category);
         }
 
         motorcycle = motorcycleRepository.save(motorcycle);
@@ -157,7 +163,7 @@ public class AdminProductService {
 
     @Transactional
     public VariantResponse createVariant(CreateVariantRequest request) {
-        if (variantRepository.findBySku(request.getSku()).isPresent()) {
+        if (variantRepository.existsBySku(request.getSku())) {
             throw new BadRequestException("SKU already exists");
         }
 
@@ -170,9 +176,8 @@ public class AdminProductService {
                 .variantName(request.getVariantName())
                 .colorName(request.getColorName())
                 .colorCode(request.getColorCode())
-                .extraPrice(request.getExtraPrice())
+                .price(request.getPrice())
                 .stockQuantity(request.getStockQuantity())
-                .imageUrl(request.getImageUrl())
                 .status(request.getStatus() != null ? request.getStatus() : VariantStatus.AVAILABLE)
                 .build();
 
@@ -181,10 +186,13 @@ public class AdminProductService {
     }
 
     @Transactional
-    public VariantResponse updateVariant(Long id, Integer stockQuantity, VariantStatus status) {
+    public VariantResponse updateVariant(Long id, BigDecimal price, Integer stockQuantity, VariantStatus status) {
         MotorcycleVariant variant = variantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Variant not found"));
 
+        if (price != null) {
+            variant.setPrice(price);
+        }
         if (stockQuantity != null) {
             variant.setStockQuantity(stockQuantity);
         }
@@ -202,5 +210,38 @@ public class AdminProductService {
             throw new ResourceNotFoundException("Variant not found");
         }
         variantRepository.deleteById(id);
+    }
+
+    @Transactional
+    public VariantImageResponse addVariantImage(CreateVariantImageRequest request) {
+        MotorcycleVariant variant = variantRepository.findById(request.getVariantId())
+                .orElseThrow(() -> new ResourceNotFoundException("Variant not found"));
+
+        if (Boolean.TRUE.equals(request.getIsThumbnail())) {
+            variantImageRepository.findByVariantIdAndIsThumbnailTrue(request.getVariantId())
+                    .ifPresent(existingThumbnail -> {
+                        existingThumbnail.setIsThumbnail(false);
+                        variantImageRepository.save(existingThumbnail);
+                    });
+        }
+
+        VariantImage image = VariantImage.builder()
+                .variant(variant)
+                .imageUrl(request.getImageUrl())
+                .publicId(request.getPublicId())
+                .sortOrder(request.getSortOrder() != null ? request.getSortOrder() : 0)
+                .isThumbnail(request.getIsThumbnail() != null ? request.getIsThumbnail() : false)
+                .build();
+
+        image = variantImageRepository.save(image);
+        return productMapper.toVariantImageResponse(image);
+    }
+
+    @Transactional
+    public void deleteVariantImage(Long id) {
+        if (!variantImageRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Image not found");
+        }
+        variantImageRepository.deleteById(id);
     }
 }

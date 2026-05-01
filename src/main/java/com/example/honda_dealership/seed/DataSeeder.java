@@ -6,6 +6,7 @@ import com.example.honda_dealership.entity.Category;
 import com.example.honda_dealership.entity.Motorcycle;
 import com.example.honda_dealership.entity.MotorcycleVariant;
 import com.example.honda_dealership.entity.User;
+import com.example.honda_dealership.entity.VariantImage;
 import com.example.honda_dealership.entity.enums.MotorcycleStatus;
 import com.example.honda_dealership.entity.enums.UserRole;
 import com.example.honda_dealership.entity.enums.UserStatus;
@@ -15,6 +16,7 @@ import com.example.honda_dealership.repository.CategoryRepository;
 import com.example.honda_dealership.repository.MotorcycleRepository;
 import com.example.honda_dealership.repository.MotorcycleVariantRepository;
 import com.example.honda_dealership.repository.UserRepository;
+import com.example.honda_dealership.repository.VariantImageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -22,7 +24,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +37,7 @@ public class DataSeeder implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final MotorcycleRepository motorcycleRepository;
     private final MotorcycleVariantRepository variantRepository;
+    private final VariantImageRepository variantImageRepository;
     private final PasswordEncoder passwordEncoder;
     private final SeedConfig seedConfig;
 
@@ -149,74 +151,85 @@ public class DataSeeder implements CommandLineRunner {
         Category scooter = categories.stream().filter(c -> c.getName().equals("Scooter")).findFirst().orElse(categories.get(0));
         Category sport = categories.stream().filter(c -> c.getName().equals("Sport")).findFirst().orElse(categories.get(0));
 
-        // Motorcycle 1: Honda Vision
         Motorcycle vision = createMotorcycle("Honda Vision 2026", "HV-2026", "honda-vision-2026",
-                new BigDecimal("35000000"), honda, scooter,
-                "Honda Vision 2026 - Stylish and efficient scooter with modern design");
-        createVariant(vision, "HV-2026-RED", "Red", "#FF0000", new BigDecimal("500000"), 10);
-        createVariant(vision, "HV-2026-WHT", "White", "#FFFFFF", new BigDecimal("500000"), 8);
-        createVariant(vision, "HV-2026-BLK", "Black", "#000000", new BigDecimal("500000"), 5);
+                honda, scooter, "Honda Vision 2026 - Stylish and efficient scooter with modern design");
+        createVariant(vision, "HV-VISION-RED", "Standard Red", "Red", "#FF0000", new BigDecimal("36000000"), 10);
+        createVariant(vision, "HV-VISION-WHT", "Standard White", "White", "#FFFFFF", new BigDecimal("36000000"), 8);
+        createVariant(vision, "HV-VISION-BLK", "Standard Black", "Black", "#000000", new BigDecimal("36500000"), 5);
 
-        // Motorcycle 2: Honda Winner
         Motorcycle winner = createMotorcycle("Honda Winner X", "HW-WINNER", "honda-winner-x",
-                new BigDecimal("48000000"), honda, sport,
-                "Honda Winner X - Sport Edition with aggressive styling");
-        createVariant(winner, "HW-WINNER-RED", "Red Racing", "#CC0000", new BigDecimal("0"), 12);
-        createVariant(winner, "HW-WINNER-BLK", "Black Matt", "#1A1A1A", new BigDecimal("0"), 6);
+                honda, sport, "Honda Winner X - Sport Edition with aggressive styling");
+        createVariant(winner, "HW-WINNER-RED", "Sport Red", "Red Racing", "#CC0000", new BigDecimal("48000000"), 12);
+        createVariant(winner, "HW-WINNER-BLK", "Matt Black", "Black Matt", "#1A1A1A", new BigDecimal("48000000"), 6);
 
-        // Motorcycle 3: Yamaha Grande
         Motorcycle grande = createMotorcycle("Yamaha Grande 2026", "YG-GRANDE", "yamaha-grande-2026",
-                new BigDecimal("38000000"), yamaha, scooter,
-                "Yamaha Grande - Elegant and premium scooter");
-        createVariant(grande, "YG-GRANDE-CRM", "Cream", "#FFFDD0", new BigDecimal("300000"), 15);
-        createVariant(grande, "YG-GRANDE-GRY", "Gray", "#808080", new BigDecimal("300000"), 10);
-
-        // Motorcycle 4: Yamaha Exciter
-        Motorcycle exciter = createMotorcycle("Yamaha Exciter 155", "YE-EXCITER", "yamaha-exciter-155",
-                new BigDecimal("55000000"), yamaha, sport,
-                "Yamaha Exciter 155 - High performance sport bike");
-        createVariant(exciter, "YE-EXCITER-BLK", "Black", "#000000", new BigDecimal("0"), 8);
-        createVariant(exciter, "YE-EXCITER-WHT", "White", "#FFFFFF", new BigDecimal("0"), 5);
-        createVariant(exciter, "YE-EXCITER-RED", "Red", "#FF0000", new BigDecimal("1000000"), 3);
-
-        // Motorcycle 5: Honda SH
-        Motorcycle sh = createMotorcycle("Honda SH 125i", "HSH-125", "honda-sh-125i",
-                new BigDecimal("65000000"), honda, scooter,
-                "Honda SH 125i - Premium urban scooter with advanced features");
-        createVariant(sh, "HSH-125-SLV", "Silver", "#C0C0C0", new BigDecimal("1000000"), 7);
-        createVariant(sh, "HSH-125-BLK", "Black", "#1A1A1A", new BigDecimal("1000000"), 4);
+                yamaha, scooter, "Yamaha Grande - Elegant and premium scooter");
+        createVariant(grande, "YG-GRANDE-CRM", "Premium Cream", "Cream", "#FFFDD0", new BigDecimal("42000000"), 15);
+        createVariant(grande, "YG-GRANDE-GRY", "Premium Gray", "Gray", "#808080", new BigDecimal("42000000"), 10);
+        createVariant(grande, "YG-GRANDE-BLK", "Premium Black", "Black", "#1A1A1A", new BigDecimal("43000000"), 8);
 
         log.info("[SEED] Motorcycles created: {}", motorcycleRepository.count());
     }
 
-    private Motorcycle createMotorcycle(String name, String code, String slug, BigDecimal price, Brand brand, Category category, String description) {
+    private Motorcycle createMotorcycle(String name, String code, String slug, Brand brand, Category category, String description) {
         Motorcycle motorcycle = Motorcycle.builder()
                 .name(name)
                 .code(code)
                 .slug(slug)
-                .basePrice(price)
                 .brand(brand)
+                .category(category)
                 .status(MotorcycleStatus.ACTIVE)
                 .description(description)
-                .thumbnailUrl("https://example.com/images/" + slug + ".jpg")
                 .build();
 
-        motorcycle.setCategories(new HashSet<>(List.of(category)));
         return motorcycleRepository.save(motorcycle);
     }
 
-    private void createVariant(Motorcycle motorcycle, String sku, String colorName, String colorCode, BigDecimal extraPrice, int stock) {
+    private void createVariant(Motorcycle motorcycle, String sku, String variantName, String colorName, String colorCode, BigDecimal price, int stock) {
         MotorcycleVariant variant = MotorcycleVariant.builder()
                 .motorcycle(motorcycle)
                 .sku(sku)
-                .variantName(colorName)
+                .variantName(variantName)
                 .colorName(colorName)
                 .colorCode(colorCode)
-                .extraPrice(extraPrice)
+                .price(price)
                 .stockQuantity(stock)
                 .status(VariantStatus.AVAILABLE)
-                .imageUrl("https://example.com/images/" + sku + ".jpg")
                 .build();
-        variantRepository.save(variant);
+
+        variant = variantRepository.save(variant);
+
+        createVariantImages(variant, sku);
+    }
+
+    private void createVariantImages(MotorcycleVariant variant, String sku) {
+        String baseUrl = "https://example.com/images/" + sku;
+
+        VariantImage image1 = VariantImage.builder()
+                .variant(variant)
+                .imageUrl(baseUrl + "-1.jpg")
+                .publicId(sku + "-1")
+                .sortOrder(1)
+                .isThumbnail(true)
+                .build();
+        variantImageRepository.save(image1);
+
+        VariantImage image2 = VariantImage.builder()
+                .variant(variant)
+                .imageUrl(baseUrl + "-2.jpg")
+                .publicId(sku + "-2")
+                .sortOrder(2)
+                .isThumbnail(false)
+                .build();
+        variantImageRepository.save(image2);
+
+        VariantImage image3 = VariantImage.builder()
+                .variant(variant)
+                .imageUrl(baseUrl + "-3.jpg")
+                .publicId(sku + "-3")
+                .sortOrder(3)
+                .isThumbnail(false)
+                .build();
+        variantImageRepository.save(image3);
     }
 }

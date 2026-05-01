@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Builder
@@ -21,10 +22,9 @@ public class VariantResponse {
     private String variantName;
     private String colorName;
     private String colorCode;
-    private BigDecimal extraPrice;
+    private BigDecimal price;
     private Integer stockQuantity;
-    private String imageUrl;
     private VariantStatus status;
-    private BigDecimal effectivePrice;
+    private List<VariantImageResponse> images;
     private LocalDateTime createdAt;
 }

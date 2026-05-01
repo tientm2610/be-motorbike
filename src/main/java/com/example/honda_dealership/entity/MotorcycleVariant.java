@@ -13,7 +13,8 @@ import java.util.List;
 
 @Entity
 @Table(name = "motorcycle_variants", indexes = {
-    @Index(name = "idx_motorcycle_variants_sku", columnList = "sku", unique = true)
+    @Index(name = "idx_motorcycle_variants_sku", columnList = "sku", unique = true),
+    @Index(name = "idx_motorcycle_variants_motorcycle_id", columnList = "motorcycle_id")
 })
 @Getter
 @Setter
@@ -30,9 +31,6 @@ public class MotorcycleVariant {
     @JoinColumn(name = "motorcycle_id", nullable = false)
     private Motorcycle motorcycle;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String sku;
-
     @Column(name = "variant_name", length = 255)
     private String variantName;
 
@@ -42,14 +40,14 @@ public class MotorcycleVariant {
     @Column(name = "color_code", length = 10)
     private String colorCode;
 
-    @Column(name = "extra_price", precision = 12, scale = 2)
-    private BigDecimal extraPrice;
+    @Column(nullable = false, unique = true, length = 50)
+    private String sku;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal price;
 
     @Column(name = "stock_quantity", nullable = false)
     private Integer stockQuantity;
-
-    @Column(name = "image_url", length = 500)
-    private String imageUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -62,6 +60,10 @@ public class MotorcycleVariant {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<VariantImage> images = new ArrayList<>();
 
     @OneToMany(mappedBy = "variant", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

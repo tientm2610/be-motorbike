@@ -6,18 +6,16 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "motorcycles", indexes = {
     @Index(name = "idx_motorcycles_name", columnList = "name"),
-    @Index(name = "idx_motorcycles_code", columnList = "code", unique = true),
-    @Index(name = "idx_motorcycles_brand_id", columnList = "brand_id")
+    @Index(name = "idx_motorcycles_slug", columnList = "slug", unique = true),
+    @Index(name = "idx_motorcycles_brand_id", columnList = "brand_id"),
+    @Index(name = "idx_motorcycles_category_id", columnList = "category_id")
 })
 @Getter
 @Setter
@@ -36,11 +34,8 @@ public class Motorcycle {
     @Column(nullable = false, unique = true, length = 50)
     private String code;
 
-    @Column(nullable = false, length = 255)
+    @Column(nullable = false, unique = true, length = 255)
     private String slug;
-
-    @Column(name = "base_price", nullable = false, precision = 12, scale = 2)
-    private BigDecimal basePrice;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -48,12 +43,13 @@ public class Motorcycle {
     @Column(name = "specs_json", columnDefinition = "TEXT")
     private String specsJson;
 
-    @Column(name = "thumbnail_url", length = 500)
-    private String thumbnailUrl;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "brand_id", nullable = false)
     private Brand brand;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -66,15 +62,6 @@ public class Motorcycle {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
-
-    @ManyToMany
-    @JoinTable(
-        name = "motorcycle_categories",
-        joinColumns = @JoinColumn(name = "motorcycle_id"),
-        inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    @Builder.Default
-    private Set<Category> categories = new HashSet<>();
 
     @OneToMany(mappedBy = "motorcycle", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

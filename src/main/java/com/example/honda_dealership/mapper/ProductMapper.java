@@ -3,14 +3,15 @@ package com.example.honda_dealership.mapper;
 import com.example.honda_dealership.dto.response.BrandResponse;
 import com.example.honda_dealership.dto.response.CategoryResponse;
 import com.example.honda_dealership.dto.response.MotorcycleResponse;
+import com.example.honda_dealership.dto.response.VariantImageResponse;
 import com.example.honda_dealership.dto.response.VariantResponse;
 import com.example.honda_dealership.entity.Brand;
 import com.example.honda_dealership.entity.Category;
 import com.example.honda_dealership.entity.Motorcycle;
 import com.example.honda_dealership.entity.MotorcycleVariant;
+import com.example.honda_dealership.entity.VariantImage;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,19 +32,17 @@ public class ProductMapper {
                 .name(motorcycle.getName())
                 .code(motorcycle.getCode())
                 .slug(motorcycle.getSlug())
-                .basePrice(motorcycle.getBasePrice())
                 .description(motorcycle.getDescription())
-                .thumbnailUrl(motorcycle.getThumbnailUrl())
+                .specsJson(motorcycle.getSpecsJson())
                 .status(motorcycle.getStatus())
                 .brand(toBrandResponse(motorcycle.getBrand()))
-                .categories(motorcycle.getCategories().stream()
-                        .map(this::toCategoryResponse)
-                        .collect(Collectors.toList()))
+                .category(toCategoryResponse(motorcycle.getCategory()))
                 .variants(motorcycle.getVariants().stream()
                         .map(this::toVariantResponse)
                         .collect(Collectors.toList()))
                 .totalStock(totalStock)
                 .createdAt(motorcycle.getCreatedAt())
+                .updatedAt(motorcycle.getUpdatedAt())
                 .build();
     }
 
@@ -61,10 +60,9 @@ public class ProductMapper {
                 .name(motorcycle.getName())
                 .code(motorcycle.getCode())
                 .slug(motorcycle.getSlug())
-                .basePrice(motorcycle.getBasePrice())
-                .thumbnailUrl(motorcycle.getThumbnailUrl())
                 .status(motorcycle.getStatus())
                 .brand(toBrandResponse(motorcycle.getBrand()))
+                .category(toCategoryResponse(motorcycle.getCategory()))
                 .totalStock(totalStock)
                 .createdAt(motorcycle.getCreatedAt())
                 .build();
@@ -75,9 +73,6 @@ public class ProductMapper {
             return null;
         }
 
-        BigDecimal effectivePrice = variant.getMotorcycle().getBasePrice()
-                .add(variant.getExtraPrice() != null ? variant.getExtraPrice() : BigDecimal.ZERO);
-
         return VariantResponse.builder()
                 .id(variant.getId())
                 .motorcycleId(variant.getMotorcycle().getId())
@@ -85,12 +80,28 @@ public class ProductMapper {
                 .variantName(variant.getVariantName())
                 .colorName(variant.getColorName())
                 .colorCode(variant.getColorCode())
-                .extraPrice(variant.getExtraPrice())
+                .price(variant.getPrice())
                 .stockQuantity(variant.getStockQuantity())
-                .imageUrl(variant.getImageUrl())
                 .status(variant.getStatus())
-                .effectivePrice(effectivePrice)
+                .images(variant.getImages().stream()
+                        .map(this::toVariantImageResponse)
+                        .collect(Collectors.toList()))
                 .createdAt(variant.getCreatedAt())
+                .build();
+    }
+
+    public VariantImageResponse toVariantImageResponse(VariantImage image) {
+        if (image == null) {
+            return null;
+        }
+
+        return VariantImageResponse.builder()
+                .id(image.getId())
+                .imageUrl(image.getImageUrl())
+                .publicId(image.getPublicId())
+                .sortOrder(image.getSortOrder())
+                .isThumbnail(image.getIsThumbnail())
+                .createdAt(image.getCreatedAt())
                 .build();
     }
 

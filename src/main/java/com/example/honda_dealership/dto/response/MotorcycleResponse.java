@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -20,13 +19,13 @@ public class MotorcycleResponse {
     private String name;
     private String code;
     private String slug;
-    private BigDecimal basePrice;
     private String description;
-    private String thumbnailUrl;
+    private String specsJson;
     private MotorcycleStatus status;
     private BrandResponse brand;
-    private List<CategoryResponse> categories;
+    private CategoryResponse category;
     private List<VariantResponse> variants;
     private Integer totalStock;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -27,13 +27,13 @@ public class CreateVariantRequest {
     private String colorName;
     private String colorCode;
 
-    private BigDecimal extraPrice;
+    @NotNull(message = "Price is required")
+    @Positive(message = "Price must be positive")
+    private BigDecimal price;
 
     @NotNull(message = "Stock quantity is required")
     @Positive(message = "Stock quantity must be positive")
     private Integer stockQuantity;
-
-    private String imageUrl;
 
     private VariantStatus status;
 }

@@ -48,10 +48,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
            "GROUP BY DATE(o.createdAt) ORDER BY date ASC")
     List<Object[]> getDailyRevenue(@Param("startDate") LocalDateTime startDate);
 
-    @Query("SELECT o.motorcycle.id, o.motorcycle.name, o.motorcycle.thumbnailUrl, " +
+    @Query("SELECT o.motorcycle.id, o.motorcycle.name, " +
            "SUM(o.quantity) as totalSold, COUNT(DISTINCT o.order.id) as totalOrders " +
            "FROM OrderItem o WHERE o.order.status = 'DELIVERED' " +
-           "GROUP BY o.motorcycle.id, o.motorcycle.name, o.motorcycle.thumbnailUrl " +
+           "GROUP BY o.motorcycle.id, o.motorcycle.name " +
            "ORDER BY totalSold DESC")
     List<Object[]> findTopSellingProducts(Pageable pageable);
 }
