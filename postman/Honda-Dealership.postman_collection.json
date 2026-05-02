@@ -1,18 +1,13 @@
 {
   "info": {
     "name": "Honda Dealership API",
-    "description": "Complete API collection for Honda Dealership E-commerce Backend\n\n## Base URL\n```\n{{baseUrl}}\n```\n\n## Standard Response Format\n```json\n{\n  \"code\": 1000,\n  \"message\": \"Success\",\n  \"result\": {}\n}\n```\n\n## Authentication\nThis collection uses Bearer token authentication. After logging in, the access token is automatically saved to the environment variable `accessToken`.",
+    "description": "Complete API documentation for Honda Dealership Backend",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080/honda/api/v1",
-      "type": "string"
-    },
-    {
-      "key": "adminBaseUrl",
-      "value": "http://localhost:8080/honda/api",
+      "value": "http://localhost:8080",
       "type": "string"
     },
     {
@@ -26,36 +21,6 @@
       "type": "string"
     },
     {
-      "key": "adminEmail",
-      "value": "admin@honda.com",
-      "type": "string"
-    },
-    {
-      "key": "adminPassword",
-      "value": "Admin@123",
-      "type": "string"
-    },
-    {
-      "key": "staffEmail",
-      "value": "staff@honda.com",
-      "type": "string"
-    },
-    {
-      "key": "staffPassword",
-      "value": "Staff@123",
-      "type": "string"
-    },
-    {
-      "key": "customerEmail",
-      "value": "customer@example.com",
-      "type": "string"
-    },
-    {
-      "key": "customerPassword",
-      "value": "Customer@123",
-      "type": "string"
-    },
-    {
       "key": "motorcycleId",
       "value": "",
       "type": "string"
@@ -66,12 +31,17 @@
       "type": "string"
     },
     {
+      "key": "imageId",
+      "value": "",
+      "type": "string"
+    },
+    {
       "key": "orderId",
       "value": "",
       "type": "string"
     },
     {
-      "key": "imageId",
+      "key": "cartItemId",
       "value": "",
       "type": "string"
     },
@@ -82,16 +52,6 @@
     },
     {
       "key": "categoryId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "cartItemId",
-      "value": "",
-      "type": "string"
-    },
-    {
-      "key": "userId",
       "value": "",
       "type": "string"
     }
@@ -111,16 +71,52 @@
       "script": {
         "type": "javascript",
         "exec": [
-          "if (pm.request.headers.has('Authorization')) {",
-          "  // Already has auth header",
-          "} else if (pm.request.url.path.includes('/auth/login') || pm.request.url.path.includes('/auth/register') || pm.request.url.path.includes('/auth/refresh')) {",
-          "  // Skip auth for auth endpoints",
-          "} else if (pm.request.url.path.includes('/products') || pm.request.url.path.includes('/brands') || pm.request.url.path.includes('/categories') || pm.request.url.path.includes('/variants')) {",
-          "  // Skip auth for public product endpoints",
-          "} else if (pm.request.url.path.includes('/health')) {",
-          "  // Skip auth for health check",
-          "} else {",
-          "  pm.request.headers.add({key: 'Authorization', value: 'Bearer ' + pm.environment.get('accessToken')});",
+          "if (pm.request.method === 'POST' || pm.request.method === 'PUT' || pm.request.method === 'DELETE') {",
+          "    if (!pm.environment.get('accessToken')) {",
+          "        console.log('Warning: No access token set!');",
+          "    }",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "javascript",
+        "exec": [
+          "var jsonData = pm.response.json();",
+          "pm.test('Response has code 1000', function() {",
+          "    pm.expect(jsonData.code).to.eql(1000);",
+          "});",
+          "",
+          "if (jsonData.result) {",
+          "    if (jsonData.result.id) {",
+          "        if (jsonData.result.motorcycleId) pm.environment.set('motorcycleId', jsonData.result.motorcycleId);",
+          "        if (jsonData.result.motorcycle && jsonData.result.motorcycle.id) pm.environment.set('motorcycleId', jsonData.result.motorcycle.id);",
+          "    }",
+          "    if (jsonData.result.accessToken) pm.environment.set('accessToken', jsonData.result.accessToken);",
+          "    if (jsonData.result.refreshToken) pm.environment.set('refreshToken', jsonData.result.refreshToken);",
+          "    if (jsonData.result.id) {",
+          "        if (pm.request.url.path.includes('motorcycles')) pm.environment.set('motorcycleId', jsonData.result.id);",
+          "        if (pm.request.url.path.includes('variants') && !pm.request.url.path.includes('images')) pm.environment.set('variantId', jsonData.result.id);",
+          "        if (pm.request.url.path.includes('variant-images') || pm.request.url.path.includes('images')) pm.environment.set('imageId', jsonData.result.id);",
+          "        if (pm.request.url.path.includes('orders') && !pm.request.url.path.includes('my-orders')) pm.environment.set('orderId', jsonData.result.id);",
+          "    }",
+          "    if (jsonData.result.items) {",
+          "        jsonData.result.items.forEach(function(item) {",
+          "            if (item.motorcycleId) pm.environment.set('motorcycleId', item.motorcycleId);",
+          "            if (item.variantId) pm.environment.set('variantId', item.variantId);",
+          "            if (item.id && pm.request.url.path.includes('cart')) pm.environment.set('cartItemId', item.id);",
+          "        });",
+          "    }",
+          "    if (jsonData.result.content) {",
+          "        jsonData.result.content.forEach(function(item) {",
+          "            if (item.id) {",
+          "                if (item.motorcycleId) pm.environment.set('motorcycleId', item.motorcycleId);",
+          "                if (item.variantId) pm.environment.set('variantId', item.variantId);",
+          "            }",
+          "        });",
+          "    }",
           "}"
         ]
       }
@@ -128,13 +124,13 @@
   ],
   "item": [
     {
-      "name": "1. Authentication",
+      "name": "Auth",
       "item": [
         {
-          "name": "POST Register (Customer)",
+          "name": "Register",
           "request": {
             "method": "POST",
-            "url": "{{baseUrl}}/auth/register",
+            "url": "{{baseUrl}}/api/v1/auth/register",
             "header": [
               {
                 "key": "Content-Type",
@@ -143,33 +139,60 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{customerEmail}}\",\n  \"password\": \"{{customerPassword}}\",\n  \"fullName\": \"Test Customer\",\n  \"phone\": \"0123456789\"\n}"
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"fullName\": \"Test User\",\n    \"phone\": \"0912345678\"\n}"
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201 or 200', function() {",
-                  "    pm.expect(pm.response.status).to.be.oneOf([201, 200]);",
-                  "});",
-                  "pm.test('Response has code', function() {",
-                  "    pm.expect(pm.response.json()).to.have.property('code');",
-                  "});",
-                  "pm.test('Response has result', function() {",
-                  "    pm.expect(pm.response.json()).to.have.property('result');",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "POST Login (Admin)",
+          "name": "Login",
           "request": {
             "method": "POST",
-            "url": "{{baseUrl}}/auth/login",
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Agent",
+                "value": "Postman"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/refresh",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "User-Agent",
+                "value": "Postman"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/auth/logout",
             "header": [
               {
                 "key": "Content-Type",
@@ -178,504 +201,507 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}"
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\"\n}"
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});",
-                  "pm.test('Login successful', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.result).to.have.property('accessToken');",
-                  "});",
-                  "pm.test('Save access token', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('accessToken', jsonData.result.accessToken);",
-                  "});",
-                  "pm.test('Save refresh token', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('refreshToken', jsonData.result.refreshToken);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "POST Login (Staff)",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/auth/login",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{staffEmail}}\",\n  \"password\": \"{{staffPassword}}\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "POST Login (Customer)",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/auth/login",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{customerEmail}}\",\n  \"password\": \"{{customerPassword}}\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});",
-                  "pm.test('Save access token', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.accessToken) {",
-                  "        pm.environment.set('accessToken', jsonData.result.accessToken);",
-                  "        pm.environment.set('refreshToken', jsonData.result.refreshToken);",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "POST Refresh Token",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/auth/refresh",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});",
-                  "pm.test('Save new access token', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('accessToken', jsonData.result.accessToken);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "POST Logout",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/auth/logout",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});",
-                  "pm.test('Clear tokens', function() {",
-                  "    pm.environment.set('accessToken', '');",
-                  "    pm.environment.set('refreshToken', '');",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "GET My Profile",
+          "name": "Get Profile",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/auth/me"
+            "url": "{{baseUrl}}/api/v1/auth/me",
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});",
-                  "pm.test('Response has user data', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.result).to.have.property('email');",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         }
       ]
     },
     {
-      "name": "2. Products / Motorcycles (Public)",
+      "name": "Motorcycles",
       "item": [
         {
-          "name": "GET All Motorcycles (with filters)",
+          "name": "Get All Motorcycles",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/motorcycles?page=0&size=10&sort=createdAt,desc",
+              "raw": "{{baseUrl}}/api/v1/motorcycles?page=0&size=20&sort=createdAt,DESC",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "motorcycles"],
               "query": [
                 {"key": "page", "value": "0"},
-                {"key": "size", "value": "10"},
-                {"key": "sort", "value": "createdAt,desc"},
+                {"key": "size", "value": "20"},
+                {"key": "sort", "value": "createdAt,DESC"},
                 {"key": "brandId", "value": "", "disabled": true},
                 {"key": "categoryId", "value": "", "disabled": true},
-                {"key": "status", "value": "ACTIVE", "disabled": true},
+                {"key": "status", "value": "", "disabled": true},
                 {"key": "keyword", "value": "", "disabled": true}
               ]
-            }
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});",
-                  "pm.test('Response has result with content', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.expect(jsonData.result).to.have.property('content');",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "GET Motorcycle by ID",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/motorcycles/{{motorcycleId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "GET Motorcycle by Slug",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/motorcycles/slug/honda-vision-2026"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "GET Search Motorcycles",
+          "name": "Get Motorcycle By ID",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/motorcycles/search?keyword=honda",
+              "raw": "{{baseUrl}}/api/v1/motorcycles/{{motorcycleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "motorcycles", "{{motorcycleId}}"]
+            },
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Get Motorcycle By Slug",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/motorcycles/slug/honda-vision-2026",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "motorcycles", "slug", "honda-vision-2026"]
+            },
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Search Motorcycles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/motorcycles/search?keyword=Honda",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "motorcycles", "search"],
               "query": [
-                {"key": "keyword", "value": "honda"}
+                {"key": "keyword", "value": "Honda"}
               ]
-            }
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "3. Brands",
-      "item": [
-        {
-          "name": "GET All Brands (Public)",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/brands"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "POST Create Brand (Admin)",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/admin/brands",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Kawasaki\",\n  \"logoUrl\": \"https://example.com/kawasaki.png\",\n  \"description\": \"Kawasaki motorcycle brand\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201', function() {",
-                  "    pm.expect(pm.response.status).to.equal(201);",
-                  "});",
-                  "pm.test('Save brand ID', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('brandId', jsonData.result.id);",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "4. Categories",
-      "item": [
-        {
-          "name": "GET All Categories (Public)",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/categories"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "POST Create Category (Admin)",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/admin/categories",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Adventure\",\n  \"slug\": \"adventure\",\n  \"description\": \"Adventure type motorcycles\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201', function() {",
-                  "    pm.expect(pm.response.status).to.equal(201);",
-                  "});",
-                  "pm.test('Save category ID', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('categoryId', jsonData.result.id);",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "5. Variants (Public)",
-      "item": [
-        {
-          "name": "GET All Variants",
+          "name": "Get Variants By Motorcycle",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/variants?page=0&size=10",
+              "raw": "{{baseUrl}}/api/v1/motorcycles/{{motorcycleId}}/variants",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "motorcycles", "{{motorcycleId}}", "variants"]
+            },
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Brands",
+      "item": [
+        {
+          "name": "Get All Brands",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/brands",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "Get All Categories",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/categories",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Variants",
+      "item": [
+        {
+          "name": "Get All Variants",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/variants?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "variants"],
               "query": [
                 {"key": "page", "value": "0"},
-                {"key": "size", "value": "10"}
+                {"key": "size", "value": "20"}
               ]
-            }
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "GET Variant by ID",
+          "name": "Get Variant By ID",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/variants/{{variantId}}"
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/variants/{{variantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "variants", "{{variantId}}"]
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "GET Variants by Motorcycle ID",
+          "name": "Get Images By Variant",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/motorcycles/{{motorcycleId}}/variants"
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/variants/{{variantId}}/images",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "variants", "{{variantId}}", "images"]
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         }
       ]
     },
     {
-      "name": "6. Images / Cloudinary",
+      "name": "Cart",
       "item": [
         {
-          "name": "GET Images by Variant (Public)",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/variants/{{variantId}}/images"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "POST Upload Variant Image (Admin/Staff)",
+          "name": "Add Item to Cart",
           "request": {
             "method": "POST",
-            "url": "{{adminBaseUrl}}/admin/variants/{{variantId}}/images",
+            "url": "{{baseUrl}}/api/v1/cart/items",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"variantId\": 1,\n    \"quantity\": 1\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Cart",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/cart",
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Update Cart Item Quantity",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cart/items/{{cartItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cart", "items", "{{cartItemId}}"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"quantity\": 2\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Cart Item",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/cart/items/{{cartItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "cart", "items", "{{cartItemId}}"]
+            },
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/v1/cart/clear",
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Checkout",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/orders/checkout",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"shippingName\": \"John Doe\",\n    \"shippingPhone\": \"0912345678\",\n    \"shippingAddress\": \"123 Main St, District 1, Ho Chi Minh City\",\n    \"paymentMethod\": \"COD\",\n    \"note\": \"Please deliver before 5 PM\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Orders",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/my-orders?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "my-orders"],
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "20"}
+              ]
+            },
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Order Detail",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}"]
+            },
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{orderId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}", "cancel"]
+            },
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - Products",
+      "item": [
+        {
+          "name": "Create Motorcycle",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/motorcycles",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Honda Vision 2026\",\n    \"code\": \"HVN-2026\",\n    \"slug\": \"honda-vision-2026\",\n    \"description\": \"Honda Vision 2026 - Reliable scooter for daily commute\",\n    \"specsJson\": \"{}\",\n    \"brandId\": 1,\n    \"categoryId\": 1,\n    \"status\": \"ACTIVE\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Motorcycle",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/motorcycles/{{motorcycleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "motorcycles", "{{motorcycleId}}"]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Honda Vision 2026 Updated\",\n    \"description\": \"Updated description\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Motorcycle",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/motorcycles/{{motorcycleId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "motorcycles", "{{motorcycleId}}"]
+            },
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Create Brand",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/brands",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Honda\",\n    \"logoUrl\": \"https://example.com/logo.png\",\n    \"description\": \"Honda Motor Company\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/categories",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Scooter\",\n    \"slug\": \"scooter\",\n    \"description\": \"Scooter category\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Variant",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/variants",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"motorcycleId\": 1,\n    \"sku\": \"HVN-2026-BLK\",\n    \"variantName\": \"Honda Vision Black\",\n    \"colorName\": \"Black\",\n    \"colorCode\": \"#000000\",\n    \"price\": 35000000,\n    \"stockQuantity\": 10,\n    \"status\": \"AVAILABLE\"\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Variant",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/variants/{{variantId}}?price=40000000&stockQuantity=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "variants", "{{variantId}}"],
+              "query": [
+                {"key": "price", "value": "40000000"},
+                {"key": "stockQuantity", "value": "15"}
+              ]
+            },
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Variant",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/variants/{{variantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "variants", "{{variantId}}"]
+            },
+            "header": []
+          },
+          "response": []
+        },
+        {
+          "name": "Add Variant Image (URL)",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/v1/admin/variant-images",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"variantId\": 1,\n    \"imageUrl\": \"https://res.cloudinary.com/demo/image/upload/sample.jpg\",\n    \"publicId\": \"sample_image\",\n    \"sortOrder\": 1,\n    \"isThumbnail\": false\n}"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Variant Image",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/variant-images/{{imageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "variant-images", "{{imageId}}"]
+            },
+            "header": []
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin - Images (Upload)",
+      "item": [
+        {
+          "name": "Upload Image to Variant",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/variants/{{variantId}}/images",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "variants", "{{variantId}}", "images"]
+            },
             "header": [],
             "body": {
               "mode": "formdata",
@@ -683,307 +709,83 @@
                 {
                   "key": "file",
                   "type": "file",
-                  "src": []
+                  "src": ""
                 }
               ]
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201', function() {",
-                  "    pm.expect(pm.response.status).to.equal(201);",
-                  "});",
-                  "pm.test('Save image ID', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('imageId', jsonData.result.id);",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "PUT Set Thumbnail (Admin/Staff)",
+          "name": "Set Thumbnail",
           "request": {
             "method": "PUT",
-            "url": "{{adminBaseUrl}}/admin/images/{{imageId}}/thumbnail"
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/images/{{imageId}}/thumbnail",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "images", "{{imageId}}", "thumbnail"]
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "DELETE Image (Admin/Staff)",
+          "name": "Delete Image",
           "request": {
             "method": "DELETE",
-            "url": "{{adminBaseUrl}}/admin/images/{{imageId}}"
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/images/{{imageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "images", "{{imageId}}"]
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         }
       ]
     },
     {
-      "name": "7. Cart (Customer)",
+      "name": "Admin - Orders",
       "item": [
         {
-          "name": "GET My Cart",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/cart"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "POST Add To Cart",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/cart/items",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"variantId\": {{variantId}},\n  \"quantity\": 1\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201', function() {",
-                  "    pm.expect(pm.response.status).to.equal(201);",
-                  "});",
-                  "pm.test('Save cart item ID', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('cartItemId', jsonData.result.id);",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PUT Update Cart Item Quantity",
-          "request": {
-            "method": "PUT",
-            "url": "{{baseUrl}}/cart/items/{{cartItemId}}",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"quantity\": 2\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "DELETE Remove Cart Item",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/cart/items/{{cartItemId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "DELETE Clear Cart",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/cart/clear"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "8. Orders (Customer)",
-      "item": [
-        {
-          "name": "POST Checkout / Create Order",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/orders/checkout",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"shippingName\": \"John Doe\",\n  \"shippingPhone\": \"0123456789\",\n  \"shippingAddress\": \"123 Main Street, District 1, Ho Chi Minh City\",\n  \"paymentMethod\": \"CASH\",\n  \"note\": \"Please deliver in the morning\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201', function() {",
-                  "    pm.expect(pm.response.status).to.equal(201);",
-                  "});",
-                  "pm.test('Save order ID', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('orderId', jsonData.result.id);",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "GET My Orders",
+          "name": "Get All Orders",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/orders/my-orders?page=0&size=10",
+              "raw": "{{baseUrl}}/api/v1/admin/orders?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "orders"],
               "query": [
                 {"key": "page", "value": "0"},
-                {"key": "size", "value": "10"}
+                {"key": "size", "value": "20"}
               ]
-            }
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "GET Order Detail",
+          "name": "Get Order Detail",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/orders/{{orderId}}"
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "orders", "{{orderId}}"]
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "PUT Cancel Order",
+          "name": "Update Order Status",
           "request": {
             "method": "PUT",
-            "url": "{{baseUrl}}/orders/{{orderId}}/cancel"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "9. Admin - Motorcycles",
-      "item": [
-        {
-          "name": "POST Create Motorcycle",
-          "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/admin/motorcycles",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "orders", "{{orderId}}", "status"]
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -992,392 +794,58 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Honda PCX 2026\",\n  \"code\": \"HP-PCX-2026\",\n  \"slug\": \"honda-pcx-2026\",\n  \"description\": \"Honda PCX 2026 - Premium scooter\",\n  \"brandId\": 1,\n  \"categoryId\": 1,\n  \"status\": \"ACTIVE\"\n}"
+              "raw": "{\n    \"status\": \"CONFIRMED\"\n}"
             }
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201', function() {",
-                  "    pm.expect(pm.response.status).to.equal(201);",
-                  "});",
-                  "pm.test('Save motorcycle ID', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('motorcycleId', jsonData.result.id);",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PUT Update Motorcycle",
-          "request": {
-            "method": "PUT",
-            "url": "{{baseUrl}}/admin/motorcycles/{{motorcycleId}}",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Honda PCX 2026 Updated\",\n  \"description\": \"Updated description\"\n}"
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "DELETE Motorcycle",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/admin/motorcycles/{{motorcycleId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         }
       ]
     },
     {
-      "name": "10. Admin - Variants",
+      "name": "Admin - Dashboard",
       "item": [
         {
-          "name": "POST Create Variant",
+          "name": "Get Summary",
           "request": {
-            "method": "POST",
-            "url": "{{baseUrl}}/admin/variants",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"motorcycleId\": {{motorcycleId}},\n  \"sku\": \"HP-PCX-RED-001\",\n  \"variantName\": \"PCX Standard Red\",\n  \"colorName\": \"Red\",\n  \"colorCode\": \"#FF0000\",\n  \"price\": 45000000,\n  \"stockQuantity\": 20,\n  \"status\": \"AVAILABLE\"\n}"
-            }
+            "method": "GET",
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/summary",
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 201', function() {",
-                  "    pm.expect(pm.response.status).to.equal(201);",
-                  "});",
-                  "pm.test('Save variant ID', function() {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.result && jsonData.result.id) {",
-                  "        pm.environment.set('variantId', jsonData.result.id);",
-                  "    }",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "PUT Update Variant",
-          "request": {
-            "method": "PUT",
-            "url": {
-              "raw": "{{baseUrl}}/admin/variants/{{variantId}}?price=46000000&stockQuantity=25",
-              "query": [
-                {"key": "price", "value": "46000000"},
-                {"key": "stockQuantity", "value": "25"},
-                {"key": "status", "value": "AVAILABLE", "disabled": true}
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "DELETE Variant",
-          "request": {
-            "method": "DELETE",
-            "url": "{{baseUrl}}/admin/variants/{{variantId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "11. Staff - Orders",
-      "item": [
-        {
-          "name": "GET All Orders (Staff)",
+          "name": "Get Revenue",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/staff/orders?page=0&size=10",
-              "query": [
-                {"key": "page", "value": "0"},
-                {"key": "size", "value": "10"},
-                {"key": "status", "value": "", "disabled": true},
-                {"key": "search", "value": "", "disabled": true}
-              ]
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "GET Order Detail (Staff)",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/staff/orders/{{orderId}}"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PUT Confirm Order",
-          "request": {
-            "method": "PUT",
-            "url": "{{baseUrl}}/staff/orders/{{orderId}}/confirm"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PUT Preparing Order",
-          "request": {
-            "method": "PUT",
-            "url": "{{baseUrl}}/staff/orders/{{orderId}}/preparing"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PUT Shipping Order",
-          "request": {
-            "method": "PUT",
-            "url": "{{baseUrl}}/staff/orders/{{orderId}}/shipping"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PUT Delivered Order",
-          "request": {
-            "method": "PUT",
-            "url": "{{baseUrl}}/staff/orders/{{orderId}}/delivered"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PUT Cancel Order (Staff)",
-          "request": {
-            "method": "PUT",
-            "url": "{{baseUrl}}/staff/orders/{{orderId}}/cancel"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "12. Admin - Dashboard",
-      "item": [
-        {
-          "name": "GET Dashboard Summary",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/admin/dashboard/summary"
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "GET Revenue",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/admin/dashboard/revenue?range=7days",
+              "raw": "{{baseUrl}}/api/v1/admin/dashboard/revenue?range=7days",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "admin", "dashboard", "revenue"],
               "query": [
                 {"key": "range", "value": "7days"}
               ]
-            }
+            },
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "GET Top Products",
+          "name": "Get Top Products",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/admin/dashboard/top-products"
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/top-products",
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "GET Order Status",
+          "name": "Get Order Status",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/admin/dashboard/order-status"
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/order-status",
+            "header": []
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Status code is 200', function() {",
-                  "    pm.expect(pm.response.status).to.equal(200);",
-                  "});"
-                ]
-              }
-            }
-          ]
+          "response": []
         }
       ]
     }

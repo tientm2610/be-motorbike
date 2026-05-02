@@ -6,6 +6,7 @@ import com.example.honda_dealership.entity.RefreshToken;
 import com.example.honda_dealership.entity.User;
 import com.example.honda_dealership.entity.enums.UserStatus;
 import com.example.honda_dealership.exception.UnauthorizedException;
+import com.example.honda_dealership.repository.CartItemRepository;
 import com.example.honda_dealership.repository.RefreshTokenRepository;
 import com.example.honda_dealership.repository.UserRepository;
 import com.example.honda_dealership.security.CustomUserDetails;
@@ -27,6 +28,7 @@ public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
     private final JwtService jwtService;
+    private final CartItemRepository cartItemRepository;
 
     @Transactional
     public LoginResponse createTokenResponse(CustomUserDetails userDetails, User user, String deviceInfo, String ipAddress) {
@@ -34,6 +36,10 @@ public class RefreshTokenService {
         String refreshToken = jwtService.generateRefreshToken(userDetails);
 
         saveRefreshToken(user.getId(), refreshToken, deviceInfo, ipAddress);
+
+        Integer cartItemCount = cartItemRepository.findByUserId(user.getId()).stream()
+                .mapToInt(com.example.honda_dealership.entity.CartItem::getQuantity)
+                .sum();
 
         return LoginResponse.builder()
                 .id(user.getId())
@@ -45,6 +51,7 @@ public class RefreshTokenService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .expiresIn(jwtService.getAccessTokenExpiration() / 1000)
+                .cartItemCount(cartItemCount)
                 .build();
     }
 

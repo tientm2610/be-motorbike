@@ -25,4 +25,5 @@ public class LoginResponse {
     private String refreshToken;
     private Long expiresIn;
     private LocalDateTime createdAt;
+    private Integer cartItemCount;
 }
