@@ -2,6 +2,7 @@ package com.example.honda_dealership.service;
 
 import com.example.honda_dealership.dto.response.BrandResponse;
 import com.example.honda_dealership.dto.response.CategoryResponse;
+import com.example.honda_dealership.dto.response.MotorcycleListResponse;
 import com.example.honda_dealership.dto.response.MotorcycleResponse;
 import com.example.honda_dealership.dto.response.VariantImageResponse;
 import com.example.honda_dealership.dto.response.VariantResponse;
@@ -9,6 +10,7 @@ import com.example.honda_dealership.entity.Brand;
 import com.example.honda_dealership.entity.Category;
 import com.example.honda_dealership.entity.Motorcycle;
 import com.example.honda_dealership.entity.MotorcycleVariant;
+import com.example.honda_dealership.entity.VariantImage;
 import com.example.honda_dealership.entity.enums.MotorcycleStatus;
 import com.example.honda_dealership.exception.ResourceNotFoundException;
 import com.example.honda_dealership.mapper.ProductMapper;
@@ -20,11 +22,12 @@ import com.example.honda_dealership.repository.VariantImageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,38 +41,26 @@ public class ProductService {
     private final ProductMapper productMapper;
 
     @Transactional(readOnly = true)
-    public Page<MotorcycleResponse> getAllMotorcycles(
+    public Page<MotorcycleListResponse> getAllMotorcycles(
             Long brandId,
             Long categoryId,
             MotorcycleStatus status,
             String keyword,
             Pageable pageable
     ) {
-        Specification<Motorcycle> spec = (root, query, cb) -> null;
+        Page<Motorcycle> motorcycles = motorcycleRepository.findAllMotorcyclesWithDetails(
+                brandId, categoryId, status, keyword, pageable);
 
-        if (brandId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("brand").get("id"), brandId));
-        }
+        List<Long> variantIds = motorcycles.getContent().stream()
+                .flatMap(m -> m.getVariants().stream())
+                .map(MotorcycleVariant::getId)
+                .distinct()
+                .toList();
 
-        if (categoryId != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId));
-        }
+        Map<Long, List<VariantImage>> imagesByVariant = variantImageRepository.findByVariantIdIn(variantIds).stream()
+                .collect(Collectors.groupingBy(img -> img.getVariant().getId()));
 
-        if (status != null) {
-            spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
-        }
-
-        if (keyword != null && !keyword.isBlank()) {
-            spec = spec.and((root, query, cb) ->
-                    cb.or(
-                            cb.like(cb.lower(root.get("name")), "%" + keyword.toLowerCase() + "%"),
-                            cb.like(cb.lower(root.get("code")), "%" + keyword.toLowerCase() + "%"),
-                            cb.like(cb.lower(root.get("description")), "%" + keyword.toLowerCase() + "%")
-                    ));
-        }
-
-        Page<Motorcycle> motorcycles = motorcycleRepository.findAll(spec, pageable);
-        return motorcycles.map(productMapper::toMotorcycleSummaryResponse);
+        return motorcycles.map(motorcycle -> productMapper.toMotorcycleListResponse(motorcycle, imagesByVariant));
     }
 
     @Transactional(readOnly = true)

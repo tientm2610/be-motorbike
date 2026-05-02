@@ -3,6 +3,7 @@ package com.example.honda_dealership.controller;
 import com.example.honda_dealership.dto.response.ApiResponse;
 import com.example.honda_dealership.dto.response.BrandResponse;
 import com.example.honda_dealership.dto.response.CategoryResponse;
+import com.example.honda_dealership.dto.response.MotorcycleListResponse;
 import com.example.honda_dealership.dto.response.MotorcycleResponse;
 import com.example.honda_dealership.dto.response.VariantImageResponse;
 import com.example.honda_dealership.dto.response.VariantResponse;
@@ -26,7 +27,7 @@ public class ProductController {
     private final ProductService productService;
 
     @GetMapping("/motorcycles")
-    public ResponseEntity<ApiResponse<Page<MotorcycleResponse>>> getAllMotorcycles(
+    public ResponseEntity<ApiResponse<Page<MotorcycleListResponse>>> getAllMotorcycles(
             @RequestParam(required = false) Long brandId,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) MotorcycleStatus status,

@@ -2,6 +2,7 @@ package com.example.honda_dealership.mapper;
 
 import com.example.honda_dealership.dto.response.BrandResponse;
 import com.example.honda_dealership.dto.response.CategoryResponse;
+import com.example.honda_dealership.dto.response.MotorcycleListResponse;
 import com.example.honda_dealership.dto.response.MotorcycleResponse;
 import com.example.honda_dealership.dto.response.VariantImageResponse;
 import com.example.honda_dealership.dto.response.VariantResponse;
@@ -12,7 +13,11 @@ import com.example.honda_dealership.entity.MotorcycleVariant;
 import com.example.honda_dealership.entity.VariantImage;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -130,6 +135,87 @@ public class ProductMapper {
                 .slug(category.getSlug())
                 .description(category.getDescription())
                 .createdAt(category.getCreatedAt())
+                .build();
+    }
+
+    public MotorcycleListResponse toMotorcycleListResponse(Motorcycle motorcycle) {
+        if (motorcycle == null) {
+            return null;
+        }
+
+        Long minPrice = motorcycle.getVariants().stream()
+                .map(MotorcycleVariant::getPrice)
+                .filter(price -> price != null)
+                .map(BigDecimal::longValue)
+                .min(Long::compare)
+                .orElse(null);
+
+        Integer totalStock = motorcycle.getVariants().stream()
+                .mapToInt(MotorcycleVariant::getStockQuantity)
+                .sum();
+
+        String thumbnailUrl = motorcycle.getVariants().stream()
+                .flatMap(variant -> variant.getImages().stream())
+                .filter(image -> Boolean.TRUE.equals(image.getIsThumbnail()))
+                .map(VariantImage::getImageUrl)
+                .findFirst()
+                .orElseGet(() -> motorcycle.getVariants().stream()
+                        .flatMap(variant -> variant.getImages().stream())
+                        .min(Comparator.comparingInt(VariantImage::getSortOrder))
+                        .map(VariantImage::getImageUrl)
+                        .orElse(null));
+
+        return MotorcycleListResponse.builder()
+                .id(motorcycle.getId())
+                .name(motorcycle.getName())
+                .slug(motorcycle.getSlug())
+                .minPrice(minPrice)
+                .thumbnailUrl(thumbnailUrl)
+                .totalStock(totalStock)
+                .brandName(motorcycle.getBrand() != null ? motorcycle.getBrand().getName() : null)
+                .categoryName(motorcycle.getCategory() != null ? motorcycle.getCategory().getName() : null)
+                .build();
+    }
+
+    public MotorcycleListResponse toMotorcycleListResponse(Motorcycle motorcycle, Map<Long, List<VariantImage>> imagesByVariant) {
+        if (motorcycle == null) {
+            return null;
+        }
+
+        Long minPrice = motorcycle.getVariants().stream()
+                .map(MotorcycleVariant::getPrice)
+                .filter(price -> price != null)
+                .map(BigDecimal::longValue)
+                .min(Long::compare)
+                .orElse(null);
+
+        Integer totalStock = motorcycle.getVariants().stream()
+                .mapToInt(MotorcycleVariant::getStockQuantity)
+                .sum();
+
+        String thumbnailUrl = motorcycle.getVariants().stream()
+                .flatMap(variant -> {
+                    List<VariantImage> images = imagesByVariant.getOrDefault(variant.getId(), List.of());
+                    return images.stream();
+                })
+                .filter(image -> Boolean.TRUE.equals(image.getIsThumbnail()))
+                .map(VariantImage::getImageUrl)
+                .findFirst()
+                .orElseGet(() -> motorcycle.getVariants().stream()
+                        .flatMap(variant -> imagesByVariant.getOrDefault(variant.getId(), List.of()).stream())
+                        .min(Comparator.comparingInt(VariantImage::getSortOrder))
+                        .map(VariantImage::getImageUrl)
+                        .orElse(null));
+
+        return MotorcycleListResponse.builder()
+                .id(motorcycle.getId())
+                .name(motorcycle.getName())
+                .slug(motorcycle.getSlug())
+                .minPrice(minPrice)
+                .thumbnailUrl(thumbnailUrl)
+                .totalStock(totalStock)
+                .brandName(motorcycle.getBrand() != null ? motorcycle.getBrand().getName() : null)
+                .categoryName(motorcycle.getCategory() != null ? motorcycle.getCategory().getName() : null)
                 .build();
     }
 }
