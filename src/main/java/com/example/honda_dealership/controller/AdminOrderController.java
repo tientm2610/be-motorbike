@@ -4,6 +4,7 @@ import com.example.honda_dealership.dto.request.UpdateOrderStatusRequest;
 import com.example.honda_dealership.dto.response.ApiResponse;
 import com.example.honda_dealership.dto.response.OrderDetailResponse;
 import com.example.honda_dealership.dto.response.OrderResponse;
+import com.example.honda_dealership.entity.enums.OrderStatus;
 import com.example.honda_dealership.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,10 @@ public class AdminOrderController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> getAllOrders(
+            @RequestParam(required = false) OrderStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return ResponseEntity.ok(ApiResponse.success(orderService.getAllOrders(pageable)));
+        return ResponseEntity.ok(ApiResponse.success(orderService.getAllOrders(status, pageable)));
     }
 
     @GetMapping("/{orderId}")

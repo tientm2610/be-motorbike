@@ -74,6 +74,12 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/variants/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
 
+                        // Cart endpoints - Authenticated (CUSTOMER, ADMIN, STAFF)
+                        .requestMatchers("/api/v1/cart/**").authenticated()
+
+                        // Order endpoints - Authenticated
+                        .requestMatchers("/api/v1/orders/**").authenticated()
+
                         // Admin endpoints - ADMIN only
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
 
@@ -82,12 +88,6 @@ public class SecurityConfig {
 
                         // Image upload endpoints - ADMIN or STAFF
                         .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "STAFF")
-
-                        // Cart endpoints - Authenticated (CUSTOMER, ADMIN, STAFF)
-                        .requestMatchers("/api/v1/cart/**").authenticated()
-
-                        // Order endpoints - Authenticated
-                        .requestMatchers("/api/v1/orders/**").authenticated()
 
                         // All other requests need authentication
                         .anyRequest().authenticated()
