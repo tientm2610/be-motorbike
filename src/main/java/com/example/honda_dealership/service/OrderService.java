@@ -106,8 +106,13 @@ public class OrderService {
     }
 
     @Transactional(readOnly = true)
-    public Page<OrderResponse> getMyOrders(Long userId, Pageable pageable) {
-        Page<Order> orders = orderRepository.findByUserId(userId, pageable);
+    public Page<OrderResponse> getMyOrders(Long userId, OrderStatus status, Pageable pageable) {
+        Page<Order> orders;
+        if (status != null) {
+            orders = orderRepository.findByUserIdAndStatus(userId, status, pageable);
+        } else {
+            orders = orderRepository.findByUserId(userId, pageable);
+        }
         return orders.map(this::mapToResponse);
     }
 

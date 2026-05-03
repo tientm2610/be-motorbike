@@ -5,6 +5,7 @@ import com.example.honda_dealership.dto.request.UpdateOrderStatusRequest;
 import com.example.honda_dealership.dto.response.ApiResponse;
 import com.example.honda_dealership.dto.response.OrderDetailResponse;
 import com.example.honda_dealership.dto.response.OrderResponse;
+import com.example.honda_dealership.entity.enums.OrderStatus;
 import com.example.honda_dealership.security.CustomUserDetails;
 import com.example.honda_dealership.service.OrderService;
 import jakarta.validation.Valid;
@@ -38,11 +39,12 @@ public class OrderController {
 
     @GetMapping("/my-orders")
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> getMyOrders(
+            @RequestParam(required = false) OrderStatus status,
             @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             Authentication authentication
     ) {
         Long userId = getUserId(authentication);
-        return ResponseEntity.ok(ApiResponse.success(orderService.getMyOrders(userId, pageable)));
+        return ResponseEntity.ok(ApiResponse.success(orderService.getMyOrders(userId, status, pageable)));
     }
 
     @GetMapping("/{orderId}")
