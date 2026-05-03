@@ -1,5 +1,7 @@
 package com.example.honda_dealership.config;
 
+import com.example.honda_dealership.exception.CustomAccessDeniedHandler;
+import com.example.honda_dealership.exception.CustomAuthenticationEntryPoint;
 import com.example.honda_dealership.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +37,8 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final UserDetailsService userDetailsService;
+    private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+    private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
     private String allowedOrigins;
@@ -90,6 +94,10 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(customAuthenticationEntryPoint)
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
