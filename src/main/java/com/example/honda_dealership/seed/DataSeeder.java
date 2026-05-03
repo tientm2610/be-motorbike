@@ -5,6 +5,7 @@ import com.example.honda_dealership.entity.Brand;
 import com.example.honda_dealership.entity.Category;
 import com.example.honda_dealership.entity.Motorcycle;
 import com.example.honda_dealership.entity.MotorcycleVariant;
+import com.example.honda_dealership.entity.SiteConfig;
 import com.example.honda_dealership.entity.User;
 import com.example.honda_dealership.entity.VariantImage;
 import com.example.honda_dealership.entity.enums.MotorcycleStatus;
@@ -15,6 +16,7 @@ import com.example.honda_dealership.repository.BrandRepository;
 import com.example.honda_dealership.repository.CategoryRepository;
 import com.example.honda_dealership.repository.MotorcycleRepository;
 import com.example.honda_dealership.repository.MotorcycleVariantRepository;
+import com.example.honda_dealership.repository.SiteConfigRepository;
 import com.example.honda_dealership.repository.UserRepository;
 import com.example.honda_dealership.repository.VariantImageRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +40,7 @@ public class DataSeeder implements CommandLineRunner {
     private final MotorcycleRepository motorcycleRepository;
     private final MotorcycleVariantRepository variantRepository;
     private final VariantImageRepository variantImageRepository;
+    private final SiteConfigRepository siteConfigRepository;
     private final PasswordEncoder passwordEncoder;
     private final SeedConfig seedConfig;
 
@@ -50,8 +53,30 @@ public class DataSeeder implements CommandLineRunner {
         seedBrands();
         seedCategories();
         seedMotorcycles();
+        seedSiteConfig();
 
         log.info("[SEED] Data seeding completed!");
+    }
+
+    private void seedSiteConfig() {
+        if (siteConfigRepository.count() > 0) {
+            log.info("[SEED] SiteConfig skipped (already exists)");
+            return;
+        }
+
+        SiteConfig siteConfig = SiteConfig.builder()
+                .shopName("Honda Dealership")
+                .primaryColor("#e31837")
+                .secondaryColor("#ffffff")
+                .heroTitle("Ride Your Dream Bike")
+                .heroSubtitle("Discover premium Honda motorcycles with expert guidance, competitive pricing, and unparalleled service.")
+                .ctaPrimaryText("Khám phá xe máy")
+                .ctaPrimaryLink("/motorcycles")
+                .ctaSecondaryText("Tìm hiểu thêm")
+                .ctaSecondaryLink("/about")
+                .build();
+        siteConfigRepository.save(siteConfig);
+        log.info("[SEED] SiteConfig created");
     }
 
     private void seedAdminUser() {

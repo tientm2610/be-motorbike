@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/variants/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/site-config").permitAll()
 
                         // Cart endpoints - Authenticated (CUSTOMER, ADMIN, STAFF)
                         .requestMatchers("/api/v1/cart/**").authenticated()

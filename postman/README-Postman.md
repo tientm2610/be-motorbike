@@ -408,6 +408,33 @@ POST /api/v1/auth/refresh
 
 ---
 
+## Site Configuration - Upload (Role: ADMIN)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/v1/admin/site-config/logo` | Upload logo image |
+| POST | `/api/v1/admin/site-config/favicon` | Upload favicon image |
+| POST | `/api/v1/admin/site-config/banner` | Upload banner image |
+
+**Upload Request:**
+- Content-Type: `multipart/form-data`
+- Field name: `file`
+- Allowed: jpg, jpeg, png, webp (max 5MB)
+
+**Response:**
+```json
+{
+  "code": 1000,
+  "message": "Success",
+  "result": {
+    "id": 1,
+    "logo": "https://cdn.cloudinary.com/.../logo.png",
+    ...
+  }
+}
+
+---
+
 ## Enums Reference
 
 ### UserRole

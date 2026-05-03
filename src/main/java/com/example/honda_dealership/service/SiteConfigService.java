@@ -7,7 +7,9 @@ import com.example.honda_dealership.repository.SiteConfigRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -15,28 +17,13 @@ import java.util.Optional;
 public class SiteConfigService {
 
     private final SiteConfigRepository siteConfigRepository;
+    private final FileUploadService fileUploadService;
 
     @Transactional(readOnly = true)
     public SiteConfigResponse getConfig() {
-        Optional<SiteConfig> config = siteConfigRepository.findFirstBy();
-        
-        if (config.isEmpty()) {
-            SiteConfig newConfig = SiteConfig.builder()
-                    .shopName("Honda Dealership")
-                    .primaryColor("#e31837")
-                    .secondaryColor("#ffffff")
-                    .heroTitle("Ride Your Dream Bike")
-                    .heroSubtitle("Discover premium Honda motorcycles with expert guidance, competitive pricing, and unparalleled service.")
-                    .ctaPrimaryText("Khám phá xe máy")
-                    .ctaPrimaryLink("/motorcycles")
-                    .ctaSecondaryText("Tìm hiểu thêm")
-                    .ctaSecondaryLink("/about")
-                    .build();
-            newConfig = siteConfigRepository.save(newConfig);
-            return mapToResponse(newConfig);
-        }
-        
-        return mapToResponse(config.get());
+        return siteConfigRepository.findFirstBy()
+                .map(this::mapToResponse)
+                .orElse(null);
     }
 
     @Transactional
@@ -105,5 +92,41 @@ public class SiteConfigService {
                 .ctaSecondaryText(config.getCtaSecondaryText())
                 .ctaSecondaryLink(config.getCtaSecondaryLink())
                 .build();
+    }
+
+    @Transactional
+    public SiteConfigResponse uploadLogo(MultipartFile file) {
+        Map<String, String> uploadResult = fileUploadService.uploadImage(file);
+        String logoUrl = uploadResult.get("secure_url");
+
+        SiteConfig config = siteConfigRepository.findFirstBy()
+                .orElseGet(() -> SiteConfig.builder().build());
+        config.setLogo(logoUrl);
+        config = siteConfigRepository.save(config);
+        return mapToResponse(config);
+    }
+
+    @Transactional
+    public SiteConfigResponse uploadFavicon(MultipartFile file) {
+        Map<String, String> uploadResult = fileUploadService.uploadImage(file);
+        String faviconUrl = uploadResult.get("secure_url");
+
+        SiteConfig config = siteConfigRepository.findFirstBy()
+                .orElseGet(() -> SiteConfig.builder().build());
+        config.setFavicon(faviconUrl);
+        config = siteConfigRepository.save(config);
+        return mapToResponse(config);
+    }
+
+    @Transactional
+    public SiteConfigResponse uploadBanner(MultipartFile file) {
+        Map<String, String> uploadResult = fileUploadService.uploadImage(file);
+        String bannerUrl = uploadResult.get("secure_url");
+
+        SiteConfig config = siteConfigRepository.findFirstBy()
+                .orElseGet(() -> SiteConfig.builder().build());
+        config.setBanner(bannerUrl);
+        config = siteConfigRepository.save(config);
+        return mapToResponse(config);
     }
 }

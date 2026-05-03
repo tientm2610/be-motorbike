@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/admin/site-config")
@@ -28,5 +29,26 @@ public class SiteConfigController {
             @Valid @RequestBody UpdateSiteConfigRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success(siteConfigService.updateConfig(request)));
+    }
+
+    @PostMapping("/logo")
+    public ResponseEntity<ApiResponse<SiteConfigResponse>> uploadLogo(
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(siteConfigService.uploadLogo(file)));
+    }
+
+    @PostMapping("/favicon")
+    public ResponseEntity<ApiResponse<SiteConfigResponse>> uploadFavicon(
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(siteConfigService.uploadFavicon(file)));
+    }
+
+    @PostMapping("/banner")
+    public ResponseEntity<ApiResponse<SiteConfigResponse>> uploadBanner(
+            @RequestParam("file") MultipartFile file
+    ) {
+        return ResponseEntity.ok(ApiResponse.success(siteConfigService.uploadBanner(file)));
     }
 }
