@@ -31,5 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
-# env files (can opt-in for committing if needed)
-.env*
+# env files (keep .env private, but allow .env.example)
+.env
+.env*.local
+!.env.example

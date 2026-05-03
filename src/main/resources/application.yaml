@@ -1,42 +1,44 @@
 spring:
+  application:
+    name: honda-dealership
+  config:
+    import: optional:file:.env
   datasource:
-    url: jdbc:mysql://localhost:3306/honda_test
-    username: root
-    password: ""
+    url: jdbc:mysql://${DB_HOST:localhost:3306}/${DB_NAME:honda_test}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
         format_sql: true
-  security:
-    user:
-      name: user
-      password: password
 
 logging:
   level:
     root: INFO
-    com.example.honda_dealership: DEBUG
-    org.springframework.web: DEBUG
+    com.example.honda_dealership: INFO
+    org.springframework.web: INFO
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
   servlet:
-    context-path: /honda
+    context-path: ${SERVER_CONTEXT_PATH:/honda}
 
 app:
   jwt:
     secret: ${JWT_SECRET:c22b54d9690db53324f3d424d21c9c9c3148010e8cfed2563ce631d14e0675e2}
-    expiration: 86400000
+    access-expiration: ${JWT_ACCESS_EXPIRATION:900000}
+    refresh-expiration: ${JWT_REFRESH_EXPIRATION:604800000}
   cors:
-    allowed-origins: http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
   seed:
+    enabled: ${SEED_ENABLED:true}
     admin:
-      email: admin@honda.com
-      password: Admin@123
+      email: ${SEED_ADMIN_EMAIL:admin@honda.com}
+      password: ${SEED_ADMIN_PASSWORD:Admin@123}
     staff:
-      email: staff@honda.com
-      password: Staff@123
+      email: ${SEED_STAFF_EMAIL:staff@honda.com}
+      password: ${SEED_STAFF_PASSWORD:Staff@123}

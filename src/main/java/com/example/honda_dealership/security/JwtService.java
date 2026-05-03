@@ -27,10 +27,12 @@ public class JwtService {
     private final long accessTokenExpiration;
     private final long refreshTokenExpiration;
 
-    public JwtService() {
-        this.secretKey = "c22b54d9690db53324f3d424d21c9c9c3148010e8cfed2563ce631d14e0675e2";
-        this.accessTokenExpiration = 900000L;
-        this.refreshTokenExpiration = 604800000L;
+    public JwtService(@Value("${app.jwt.secret}") String secretKey,
+                      @Value("${app.jwt.access-expiration}") long accessTokenExpiration,
+                      @Value("${app.jwt.refresh-expiration}") long refreshTokenExpiration) {
+        this.secretKey = secretKey;
+        this.accessTokenExpiration = accessTokenExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
     public String extractUsername(String token) {
