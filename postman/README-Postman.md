@@ -358,6 +358,56 @@ POST /api/v1/auth/refresh
 
 ---
 
+## Site Configuration (Role: ADMIN)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/v1/admin/site-config` | Get site configuration |
+| PUT | `/api/v1/admin/site-config` | Update site configuration |
+
+**GetSiteConfigResponse:**
+```json
+{
+  "id": 1,
+  "logo": "https://cdn.example.com/logo.png",
+  "shopName": "Honda Dealership",
+  "primaryColor": "#e31837",
+  "secondaryColor": "#ffffff",
+  "banner": "https://cdn.example.com/banner.jpg",
+  "slogan": "Ride Your Dream",
+  "favicon": "https://cdn.example.com/favicon.ico",
+  "heroTitle": "Ride Your Dream Bike",
+  "heroSubtitle": "Discover premium Honda motorcycles with expert guidance...",
+  "ctaPrimaryText": "Khám phá xe máy",
+  "ctaPrimaryLink": "/motorcycles",
+  "ctaSecondaryText": "Tìm hiểu thêm",
+  "ctaSecondaryLink": "/about"
+}
+```
+
+**UpdateSiteConfigRequest:**
+```json
+{
+  "logo": "https://cdn.example.com/logo.png",
+  "shopName": "Honda Dealership",
+  "primaryColor": "#e31837",
+  "secondaryColor": "#ffffff",
+  "banner": "https://cdn.example.com/banner.jpg",
+  "slogan": "Ride Your Dream",
+  "favicon": "https://cdn.example.com/favicon.ico",
+  "heroTitle": "Ride Your Dream Bike",
+  "heroSubtitle": "Discover premium Honda motorcycles with expert guidance...",
+  "ctaPrimaryText": "Khám phá xe máy",
+  "ctaPrimaryLink": "/motorcycles",
+  "ctaSecondaryText": "Tìm hiểu thêm",
+  "ctaSecondaryLink": "/about"
+}
+```
+
+**Note:** All fields are optional. Only send fields you want to update.
+
+---
+
 ## Enums Reference
 
 ### UserRole
