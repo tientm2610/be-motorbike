@@ -67,6 +67,9 @@ public class SecurityConfig {
                         // Auth endpoints - Public
                         .requestMatchers("/api/v1/auth/**").permitAll()
 
+                        // Health check - Public (Render keep-alive)
+                        .requestMatchers("/health").permitAll()
+
                         // Public GET endpoints - No auth required
                         .requestMatchers(HttpMethod.GET, "/api/v1/motorcycles/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/brands/**").permitAll()

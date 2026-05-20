@@ -1,0 +1,55 @@
+services:
+  - type: web
+    name: honda-dealership-api
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Database
+      - key: DB_HOST
+        value: ${DB_HOST}
+      - key: DB_NAME
+        value: ${DB_NAME}
+      - key: DB_USERNAME
+        value: ${DB_USERNAME}
+      - key: DB_PASSWORD
+        sync: false
+      # JWT
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_ACCESS_EXPIRATION
+        value: ${JWT_ACCESS_EXPIRATION}
+      - key: JWT_REFRESH_EXPIRATION
+        value: ${JWT_REFRESH_EXPIRATION}
+      # CORS
+      - key: CORS_ALLOWED_ORIGINS
+        value: ${CORS_ALLOWED_ORIGINS}
+      # Server
+      - key: SERVER_PORT
+        value: ${SERVER_PORT}
+      - key: SERVER_CONTEXT_PATH
+        value: ${SERVER_CONTEXT_PATH}
+      # Cloudinary
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      # Seed (set false khi deploy production)
+      - key: SEED_ENABLED
+        value: true
+
+  # Cron Service giữ Web Service không bị sleep mỗi 10 phút
+  - type: cron
+    name: keep-alive-honda-dealership
+    runtime: docker
+    plan: free
+    schedule: "*/10 * * * *"
+    envVars:
+      - key: WEB_SERVICE_URL
+        value: ${WEB_SERVICE_URL}
+    image:
+      uri: curlimages/curl:latest
+      command: ["-s", "${WEB_SERVICE_URL}/health"]

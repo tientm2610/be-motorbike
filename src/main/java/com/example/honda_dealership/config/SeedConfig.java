@@ -3,6 +3,7 @@ package com.example.honda_dealership.config;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Value;
 
 @Data
 @Configuration
@@ -14,13 +15,19 @@ public class SeedConfig {
 
     @Data
     public static class AdminSeed {
-        private String email = "admin@honda.com";
-        private String password = "Admin@123";
+        @Value("${SEED_ADMIN_EMAIL:admin@honda.com}")
+        private String email;
+
+        @Value("${SEED_ADMIN_PASSWORD:Admin@123}")
+        private String password;
     }
 
     @Data
     public static class StaffSeed {
-        private String email = "staff@honda.com";
-        private String password = "Staff@123";
+        @Value("${SEED_STAFF_EMAIL:staff@honda.com}")
+        private String email;
+
+        @Value("${SEED_STAFF_PASSWORD:Staff@123}")
+        private String password;
     }
 }

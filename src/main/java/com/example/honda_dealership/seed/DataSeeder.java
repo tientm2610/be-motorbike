@@ -228,7 +228,7 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     private void createVariantImages(MotorcycleVariant variant, String sku) {
-        String baseUrl = "https://example.com/images/" + sku;
+        String baseUrl = "${SEED_IMAGE_BASE_URL:https://example.com/images/}" + sku;
 
         VariantImage image1 = VariantImage.builder()
                 .variant(variant)
